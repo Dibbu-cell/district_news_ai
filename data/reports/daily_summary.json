@@ -1,0 +1,728 @@
+{
+  "window_days": 5,
+  "district_count": 22,
+  "district_summaries": [
+    {
+      "state": "mizoram",
+      "district": "aizawal west",
+      "article_count": 14,
+      "top_problem": "Governance And Civic Administration",
+      "top_problem_reason": "8 articles were grouped under this issue in the last 5 days. Coverage is rising with 6 recent articles, sentiment is mixed, and the strongest signals were government.",
+      "future_risk": "Governance And Civic Administration",
+      "future_risk_level": "high",
+      "top_problems": [
+        {
+          "problem": "Governance And Civic Administration",
+          "frequency": 8,
+          "trend": "rising",
+          "sentiment": "mixed",
+          "impact_score": 25.34,
+          "reason": "8 articles were grouped under this issue in the last 5 days. Coverage is rising with 6 recent articles, sentiment is mixed, and the strongest signals were government.",
+          "supporting_news": [
+            {
+              "title": "Air India group to operate 58 West Asia flights as IndiGo restores Middle East services - The Times of India",
+              "url": "https://news.google.com/rss/articles/CBMiggJBVV95cUxPZVNuYTFxdW8tamlEUTR3TzFCOHRIYVpzbUdxTVByREUyWENhM1pQaFQ2X2xCTVRGX19qb1RwVUttWmlhcGoxWHItZVRCcFZ3X3l2eVJLMnJUY190YmZBMlhMYU5QUWhxaEh5ai1rTk81TlZ6WHNQV1hxclFuQU92VFliWjdOMTJXS1pFekIwWURadzhsRDhheXh4Y2FudnB4WjFkQTRXVlR3dVdMSzlsQVIteFFDcl8xNmhiZFV5U2toVC1qMk9DdFhibF9KemlaUUVFSWUyaUhTQmtLY3VpWmg1WGhwVDhHM2hMcl9XSFgwV01sZUtjTlJTNGNHM1FpWWc?oc=5",
+              "source": "google_news",
+              "published_at": "2026-03-12T04:38:00+00:00"
+            },
+            {
+              "title": "FPI holdings in FAR G-Secs fall \u20b94,634 crore as West Asia conflict rattles markets",
+              "url": "https://www.thehindubusinessline.com/markets/fpi-holdings-in-far-g-secs-fall-4634-crore-as-west-asia-conflict-rattles-markets/article70729736.ece",
+              "source": "newsapi",
+              "published_at": "2026-03-11T05:39:16+00:00"
+            },
+            {
+              "title": "West Indian and African T20 cricketers are stuck in India, unable to leave due to the war.",
+              "url": "https://english.gossiplankanews.com/2026/03/west-indian-and-african-t20-cricketers.html",
+              "source": "newsapi",
+              "published_at": "2026-03-11T05:30:18+00:00"
+            }
+          ]
+        },
+        {
+          "problem": "Employment And Economy",
+          "frequency": 4,
+          "trend": "rising",
+          "sentiment": "negative",
+          "impact_score": 17.36,
+          "reason": "4 articles were grouped under this issue in the last 5 days. Coverage is rising with 3 recent articles, sentiment is negative, and the strongest signals were prices, economy.",
+          "supporting_news": [
+            {
+              "title": "11:11 | LPG shortage ripples through India\u2019s food economy as West Asia war fuels oil shock - LinkedIn",
+              "url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxNeWNZZVNXQWR5MldENmczZ09SeEJ6YkN2VEhwZGxQQ095cnhmaHZ3R3JOMkhDUUxfR1lPbUV4YTVzclk3aUNvdWJCTFRYNGxuSHpMNHNnS2xTUXpPeHAzZWlFTDBMcXF4LXZzaFlxOVFqYXdlMG5WbHU0V25XYW1sQVY2R3dHRUFDa3E2eTRqOGxObUU2MHdtVHZnU1cxdGpLQlE?oc=5",
+              "source": "google_news",
+              "published_at": "2026-03-12T05:30:08+00:00"
+            },
+            {
+              "title": "Air India to introduce fuel surcharge on tickets: How much will your international flight cost?",
+              "url": "https://economictimes.indiatimes.com/nri/latest-updates/iran-israel-war-air-india-to-introduce-fuel-surcharge-on-tickets-how-much-will-your-international-flight-cost/articleshow/129439292.cms",
+              "source": "newsapi",
+              "published_at": "2026-03-11T05:14:38+00:00"
+            },
+            {
+              "title": "Middle East tensions, oil jitters cloud cautious market open; Tata Steel, Reliance lead gains",
+              "url": "https://www.thehindubusinessline.com/markets/stock-markets/middle-east-tensions-oil-jitters-cloud-cautious-market-open-tata-steel-reliance-lead-gains/article70729498.ece",
+              "source": "newsapi",
+              "published_at": "2026-03-11T04:18:20+00:00"
+            }
+          ]
+        },
+        {
+          "problem": "Weather And Disaster",
+          "frequency": 1,
+          "trend": "cooling",
+          "sentiment": "strongly negative",
+          "impact_score": 11.0,
+          "reason": "1 articles were grouped under this issue in the last 5 days. Coverage is cooling with 0 recent articles, sentiment is strongly negative, and the strongest signals were rain.",
+          "supporting_news": [
+            {
+              "title": "West Asia crisis : Bangladesh seeks increased diesel supply from India amid energy strain",
+              "url": "https://www.livemint.com/news/bangladesh-seeks-more-diesel-india-numaligarh-refinery-pipeline-11773237195955.html",
+              "source": "gdelt",
+              "published_at": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "state": "manipur",
+      "district": "imphal east",
+      "article_count": 8,
+      "top_problem": "Governance And Civic Administration",
+      "top_problem_reason": "8 articles were grouped under this issue in the last 5 days. Coverage is rising with 6 recent articles, sentiment is negative, and the strongest signals were government.",
+      "future_risk": "Governance And Civic Administration",
+      "future_risk_level": "high",
+      "top_problems": [
+        {
+          "problem": "Governance And Civic Administration",
+          "frequency": 8,
+          "trend": "rising",
+          "sentiment": "negative",
+          "impact_score": 26.621,
+          "reason": "8 articles were grouped under this issue in the last 5 days. Coverage is rising with 6 recent articles, sentiment is negative, and the strongest signals were government.",
+          "supporting_news": [
+            {
+              "title": "Inside India newsletter: How the war in the Middle East is set to determine India's trade route to Europe - CNBC",
+              "url": "https://news.google.com/rss/articles/CBMiekFVX3lxTE15cUFfbktVc3MtS3Z1bGVtV2t4OGVVNGx2cTIzTkVqeVFVMHp0ODFyb0tOMjZjX0R2bXBpYmtUWHFOLVRUNWVFU2wtWnY1bzJtZ2lXa29ocWlSSUNFMFNDQVlfa3V5dFpCdzlQa2hGdk5yNGhWYnJsbllB0gF_QVVfeXFMTWM1WV9SYTVYMDdBYks5bUJtV2FPSmpHOXFyM3p4Zjdsd1Q1TFdpMF9VbmxHVkZINUM5ZlJkcUR5ZW1Xd29MUERjRzZpNHoyVGUtcHp2eWlYcW81NExGNU5QeE0zNnU4MTNvdUZUUzZyZGRXQV9pdC1lNl91b2d5OA?oc=5",
+              "source": "google_news",
+              "published_at": "2026-03-12T04:17:03+00:00"
+            },
+            {
+              "title": "India's Russian oil imports jump 50% in March as Middle East war hits energy supply - India Today",
+              "url": "https://news.google.com/rss/articles/CBMi2AFBVV95cUxPMjdVZklYRXpmTlhTVW9CWHBWUzhuVkhLYXdMMU9YVllQdTlFMTJRZ2lBTlJSVmdqclNoamdpM25zb0RNd0JZcGszTGwteWV1SldLeUxKZUVSYUEyOEx3MGMyajBLcU54V2JwWS1rM1RjUWZkc3F1dEppSDJMYURhN3ZWdU15V1VQU3VCVmNvUXpvNjg4S2hXWU42QjhMQmhPdW91eXNfRExUYjkwZGZRdHN3dU9UR1hWbWplbE5YZmkzUGk4aUhiZEY1ZFlTdm80cy1VRS1QMmHSAd4BQVVfeXFMT2ZYdS0wVjRSbElveVJfZ0pKWmRxLW0yM29WRFJSbE41MW5HN2tWYVhoMTlFcVFncm5DZTdMeXJWbERnSmxmWFJJdDk2dWxfcmU0SVJKLWdXc3c4cUFuSkRZREg4WWJlRFZIVzA2eUgzQ3didUhRVGprWjF0S2JfNE85V2xKeTk3bGVwcm1tT1lJRDdEbFlvSmxEUE51bWVHV21NbWFwQzNYeGZRVERpdFRZZWJ0c1NXdkdzTTYyVThuRGJBbWt5d1IwM1B2dnZCcXRvU011dmF6WE0zVVNR?oc=5",
+              "source": "google_news",
+              "published_at": "2026-03-11T19:50:41+00:00"
+            },
+            {
+              "title": "Rupee falls 4 paise to 91.89 against US dollar in early trade",
+              "url": "https://economictimes.indiatimes.com/markets/forex/forex-news/rupee-falls-4-paise-to-91-89-against-us-dollar-in-early-trade/articleshow/129437108.cms",
+              "source": "newsapi",
+              "published_at": "2026-03-11T04:27:20+00:00"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "state": "andhra pradesh",
+      "district": "hyderabad",
+      "article_count": 4,
+      "top_problem": "Water Supply",
+      "top_problem_reason": "2 articles were grouped under this issue in the last 5 days. Coverage is rising with 2 recent articles, sentiment is strongly negative, and the strongest signals were water, water shortage, drinking water.",
+      "future_risk": "Water Supply",
+      "future_risk_level": "high",
+      "top_problems": [
+        {
+          "problem": "Water Supply",
+          "frequency": 2,
+          "trend": "rising",
+          "sentiment": "strongly negative",
+          "impact_score": 21.0,
+          "reason": "2 articles were grouped under this issue in the last 5 days. Coverage is rising with 2 recent articles, sentiment is strongly negative, and the strongest signals were water, water shortage, drinking water.",
+          "supporting_news": [
+            {
+              "title": "Hyderabad tanker supply disrupted",
+              "url": "https://example.com/hyd-2",
+              "source": "seed",
+              "published_at": "2026-03-12T10:30:00+00:00"
+            },
+            {
+              "title": "Water shortage protests in Hyderabad",
+              "url": "https://example.com/hyd-1",
+              "source": "seed",
+              "published_at": "2026-03-12T09:00:00+00:00"
+            }
+          ]
+        },
+        {
+          "problem": "Sanitation And Waste",
+          "frequency": 1,
+          "trend": "rising",
+          "sentiment": "strongly negative",
+          "impact_score": 20.5,
+          "reason": "1 articles were grouped under this issue in the last 5 days. Coverage is rising with 1 recent articles, sentiment is strongly negative, and the strongest signals were sanitation, drainage.",
+          "supporting_news": [
+            {
+              "title": "Drainage complaints rise in Hyderabad",
+              "url": "https://example.com/hyd-3",
+              "source": "seed",
+              "published_at": "2026-03-12T12:15:00+00:00"
+            }
+          ]
+        },
+        {
+          "problem": "Governance And Civic Administration",
+          "frequency": 1,
+          "trend": "rising",
+          "sentiment": "mixed",
+          "impact_score": 3.7,
+          "reason": "1 articles were grouped under this issue in the last 5 days. Coverage is rising with 1 recent articles, sentiment is mixed, and the strongest signals were administrative failure, public grievance.",
+          "supporting_news": [
+            {
+              "title": "India, Scotland and Italy join England in the semi-finals of World Cup Qualifiers in Hyderabad - F\u00e9d\u00e9ration Internationale de Hockey",
+              "url": "https://news.google.com/rss/articles/CBMi4AFBVV95cUxQdEIzOXVGdEdWN1g1OWk1aGNObTZCTjVBLTVtUWljajN1NFQ3d19XWlRDd2JfRC1pN2hWNEt4b3liUkZvM3ZQOVNwZU5lc3JTaWZVTHBLdmkyWUFKcGo1OHhTZE9pWmV1SUxvdURicnJUUkdKaG9fb2RBcXZaMDl2WXRSNzVkRDMwMGpHV1RIaXVtRzQ1bEdxNWExNVh5QWdGN2FDWDhuR21hSV9RZ1d0cTBhcGNWaUxIcUYxbldDX2FfcnJ0UlJhZmtqLTh4dnh4QWNkekVPZXZJOERReEdKTw?oc=5",
+              "source": "google_news",
+              "published_at": "2026-03-11T17:45:50+00:00"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "state": "assam",
+      "district": "jorhat",
+      "article_count": 2,
+      "top_problem": "Governance And Civic Administration",
+      "top_problem_reason": "2 articles were grouped under this issue in the last 5 days. Coverage is stable with 1 recent articles, sentiment is mixed, and the strongest signals were administrative failure, public grievance.",
+      "future_risk": "Governance And Civic Administration",
+      "future_risk_level": "watch",
+      "top_problems": [
+        {
+          "problem": "Governance And Civic Administration",
+          "frequency": 2,
+          "trend": "stable",
+          "sentiment": "mixed",
+          "impact_score": 5.7,
+          "reason": "2 articles were grouped under this issue in the last 5 days. Coverage is stable with 1 recent articles, sentiment is mixed, and the strongest signals were administrative failure, public grievance.",
+          "supporting_news": [
+            {
+              "title": "Gaurav Gogoi will lose badly in Jorhat polls, says Assam Deputy Speaker Momin",
+              "url": "https://economictimes.indiatimes.com/news/elections/assembly-elections/assam/gaurav-gogoi-will-lose-badly-in-jorhat-polls-says-deputy-speaker-momin/articleshow/129439998.cms",
+              "source": "newsapi",
+              "published_at": "2026-03-11T05:33:53+00:00"
+            },
+            {
+              "title": "  Gaurav Gogoi will lose badly from Jorhat in upcoming elections : Assam Deputy Speaker Numal Momin",
+              "url": "https://aninews.in/news/national/politics/gaurav-gogoi-will-lose-badly-from-jorhat-in-upcoming-elections-assam-deputy-speaker-numal-momin20260311101909/",
+              "source": "gdelt",
+              "published_at": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "state": "maharashtra",
+      "district": "pune",
+      "article_count": 2,
+      "top_problem": "Governance And Civic Administration",
+      "top_problem_reason": "1 articles were grouped under this issue in the last 5 days. Coverage is rising with 1 recent articles, sentiment is strongly negative, and the strongest signals were administrative failure, public grievance.",
+      "future_risk": "Governance And Civic Administration",
+      "future_risk_level": "medium",
+      "top_problems": [
+        {
+          "problem": "Governance And Civic Administration",
+          "frequency": 1,
+          "trend": "rising",
+          "sentiment": "strongly negative",
+          "impact_score": 7.5,
+          "reason": "1 articles were grouped under this issue in the last 5 days. Coverage is rising with 1 recent articles, sentiment is strongly negative, and the strongest signals were administrative failure, public grievance.",
+          "supporting_news": [
+            {
+              "title": "Pune\u2019s small industries bear brunt as LPG supply shrinks amid West Asia crisis",
+              "url": "https://indianexpress.com/article/cities/pune/pune-small-industries-lpg-supply-shrinks-west-asia-crisis-10575826/",
+              "source": "newsapi",
+              "published_at": "2026-03-11T04:35:45+00:00"
+            }
+          ]
+        },
+        {
+          "problem": "Roads And Transport",
+          "frequency": 1,
+          "trend": "rising",
+          "sentiment": "positive",
+          "impact_score": 5.5,
+          "reason": "1 articles were grouped under this issue in the last 5 days. Coverage is rising with 1 recent articles, sentiment is positive, and the strongest signals were transport.",
+          "supporting_news": [
+            {
+              "title": "Bharat Forge launches flight components manufacturing facility with French co Liebherr-Aerospace",
+              "url": "https://economictimes.indiatimes.com/industry/transportation/airlines-/-aviation/bharat-forge-launches-flight-components-manufacturing-facility-with-french-co-liebherr-aerospace-in-pune-landing-gear/articleshow/129437766.cms",
+              "source": "newsapi",
+              "published_at": "2026-03-11T04:59:28+00:00"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "state": "west bengal",
+      "district": "kolkata",
+      "article_count": 1,
+      "top_problem": "Weather And Disaster",
+      "top_problem_reason": "1 articles were grouped under this issue in the last 5 days. Coverage is cooling with 0 recent articles, sentiment is mixed, and the strongest signals were rain.",
+      "future_risk": "Weather And Disaster",
+      "future_risk_level": "watch",
+      "top_problems": [
+        {
+          "problem": "Weather And Disaster",
+          "frequency": 1,
+          "trend": "cooling",
+          "sentiment": "mixed",
+          "impact_score": 7.2,
+          "reason": "1 articles were grouped under this issue in the last 5 days. Coverage is cooling with 0 recent articles, sentiment is mixed, and the strongest signals were rain.",
+          "supporting_news": [
+            {
+              "title": "Vande Bharat Sleeper Train Route , \u0915\u094b\u0932\u0915\u093e\u0924\u093e \u0938\u0947 \u0917\u0941\u0935\u093e\u0939\u093e\u091f\u0940 \u0915\u0947 \u092c\u0940\u091a \u0926\u0947\u0936 \u0915\u0940 \u092a\u0939\u0932\u0940 \u0935\u0902\u0926\u0947 \u092d\u093e\u0930\u0924 \u091f\u094d\u0930\u0947\u0928 , \u091c\u093e\u0928\u093f\u090f \u0930\u0942\u091f , \u0915\u093f\u0930\u093e\u092f\u093e , \u0938\u094d\u091f\u0947\u0936\u0928 \u0938\u092e\u0947\u0924 \u0938\u093e\u0930\u0940 \u0921\u0940\u091f\u0947\u0932 - vande bharat sleeper train route guwahati to kolkata fare launch date all details - Kolkata News",
+              "url": "https://navbharattimes.indiatimes.com/state/west-bengal/kolkata/vande-bharat-sleeper-train-route-guwahati-to-kolkata-fare-launch-date-all-details/articleshow/126365402.cms",
+              "source": "gdelt",
+              "published_at": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "state": "andhra pradesh",
+      "district": "guntur",
+      "article_count": 1,
+      "top_problem": "Roads And Transport",
+      "top_problem_reason": "1 articles were grouped under this issue in the last 5 days. Coverage is rising with 1 recent articles, sentiment is positive, and the strongest signals were road, pothole.",
+      "future_risk": "Roads And Transport",
+      "future_risk_level": "medium",
+      "top_problems": [
+        {
+          "problem": "Roads And Transport",
+          "frequency": 1,
+          "trend": "rising",
+          "sentiment": "positive",
+          "impact_score": 12.5,
+          "reason": "1 articles were grouped under this issue in the last 5 days. Coverage is rising with 1 recent articles, sentiment is positive, and the strongest signals were road, pothole.",
+          "supporting_news": [
+            {
+              "title": "Road repair demand in Guntur",
+              "url": "https://example.com/gun-1",
+              "source": "seed",
+              "published_at": "2026-03-12T11:00:00+00:00"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "state": "jammu and kashmir",
+      "district": "jammu",
+      "article_count": 1,
+      "top_problem": "Power Supply",
+      "top_problem_reason": "1 articles were grouped under this issue in the last 5 days. Coverage is cooling with 0 recent articles, sentiment is mixed, and the strongest signals were power.",
+      "future_risk": "Power Supply",
+      "future_risk_level": "watch",
+      "top_problems": [
+        {
+          "problem": "Power Supply",
+          "frequency": 1,
+          "trend": "cooling",
+          "sentiment": "mixed",
+          "impact_score": 7.2,
+          "reason": "1 articles were grouped under this issue in the last 5 days. Coverage is cooling with 0 recent articles, sentiment is mixed, and the strongest signals were power.",
+          "supporting_news": [
+            {
+              "title": "India 4 Hydropower Projects On The Chenab River , \u092d\u093e\u0930\u0924 \u0928\u0947 \u0924\u0947\u091c\u0940 \u0938\u0947 \u0916\u094b\u0926 \u0921\u093e\u0932\u0940 \u092a\u093e\u0915\u093f\u0938\u094d\u0924\u093e\u0928 \u0915\u0940  \u091c\u0921\u093c ... \u0932\u0917\u093e \u0926\u093f\u090f \u092c\u0921\u093c\u0947 - \u092c\u0921\u093c\u0947 \u092c\u0941\u0932\u0921\u094b\u091c\u0930 ! - india big move 4 hydro power projects in jammu kashmir rapidly under construction on chenab river pakistans tensions rise...",
+              "url": "https://navbharattimes.indiatimes.com/india/india-big-move-4-hydro-power-projects-in-jammu-kashmir-rapidly-under-construction-on-chenab-river-pakistans-tensions-rise/articleshow/126391616.cms",
+              "source": "gdelt",
+              "published_at": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "state": "orissa",
+      "district": "puri",
+      "article_count": 1,
+      "top_problem": "Law And Order",
+      "top_problem_reason": "1 articles were grouped under this issue in the last 5 days. Coverage is rising with 1 recent articles, sentiment is strongly negative, and the strongest signals were attack.",
+      "future_risk": "Law And Order",
+      "future_risk_level": "medium",
+      "top_problems": [
+        {
+          "problem": "Law And Order",
+          "frequency": 1,
+          "trend": "rising",
+          "sentiment": "strongly negative",
+          "impact_score": 10.5,
+          "reason": "1 articles were grouped under this issue in the last 5 days. Coverage is rising with 1 recent articles, sentiment is strongly negative, and the strongest signals were attack.",
+          "supporting_news": [
+            {
+              "title": "K\u2019taka bill seeks paper ballots for panchayat polls",
+              "url": "https://timesofindia.indiatimes.com/city/bengaluru/ktaka-bill-seeks-paper-ballots-for-panchayat-polls/articleshow/129418312.cms",
+              "source": "newsapi",
+              "published_at": "2026-03-11T04:17:00+00:00"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "state": "tamilnadu",
+      "district": "chennai corp",
+      "article_count": 1,
+      "top_problem": "Law And Order",
+      "top_problem_reason": "1 articles were grouped under this issue in the last 5 days. Coverage is rising with 1 recent articles, sentiment is strongly negative, and the strongest signals were security.",
+      "future_risk": "Law And Order",
+      "future_risk_level": "medium",
+      "top_problems": [
+        {
+          "problem": "Law And Order",
+          "frequency": 1,
+          "trend": "rising",
+          "sentiment": "strongly negative",
+          "impact_score": 12.5,
+          "reason": "1 articles were grouped under this issue in the last 5 days. Coverage is rising with 1 recent articles, sentiment is strongly negative, and the strongest signals were security.",
+          "supporting_news": [
+            {
+              "title": "Cybersecurity talent squeeze paints a big target on India Inc",
+              "url": "https://economictimes.indiatimes.com/tech/technology/cybersecurity-talent-squeeze-paints-a-big-target-on-india-inc/articleshow/129408374.cms",
+              "source": "newsapi",
+              "published_at": "2026-03-11T00:30:00+00:00"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "state": "gujarat",
+      "district": "anand",
+      "article_count": 1,
+      "top_problem": "Governance And Civic Administration",
+      "top_problem_reason": "1 articles were grouped under this issue in the last 5 days. Coverage is rising with 1 recent articles, sentiment is mixed, and the strongest signals were administrative failure, public grievance.",
+      "future_risk": "Governance And Civic Administration",
+      "future_risk_level": "watch",
+      "top_problems": [
+        {
+          "problem": "Governance And Civic Administration",
+          "frequency": 1,
+          "trend": "rising",
+          "sentiment": "mixed",
+          "impact_score": 3.7,
+          "reason": "1 articles were grouped under this issue in the last 5 days. Coverage is rising with 1 recent articles, sentiment is mixed, and the strongest signals were administrative failure, public grievance.",
+          "supporting_news": [
+            {
+              "title": "'Rockets are there, we need more launchpads': Anand Mahindra on Manisha Kalyan\u2019s viral free kick at the AFC Women's Asian Cup against Chinese Taipei",
+              "url": "https://economictimes.indiatimes.com/magazines/panache/rockets-are-there-we-need-more-launchpads-anand-mahindra-on-manisha-kalyans-viral-free-kick-at-the-afc-womens-asian-cup-against-chinese-taipei/articleshow/129434081.cms",
+              "source": "newsapi",
+              "published_at": "2026-03-11T03:32:52+00:00"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "state": "himachal pradesh",
+      "district": "shimla",
+      "article_count": 1,
+      "top_problem": "Governance And Civic Administration",
+      "top_problem_reason": "1 articles were grouped under this issue in the last 5 days. Coverage is cooling with 0 recent articles, sentiment is mixed, and the strongest signals were administrative failure, public grievance.",
+      "future_risk": "Governance And Civic Administration",
+      "future_risk_level": "watch",
+      "top_problems": [
+        {
+          "problem": "Governance And Civic Administration",
+          "frequency": 1,
+          "trend": "cooling",
+          "sentiment": "mixed",
+          "impact_score": 2.2,
+          "reason": "1 articles were grouped under this issue in the last 5 days. Coverage is cooling with 0 recent articles, sentiment is mixed, and the strongest signals were administrative failure, public grievance.",
+          "supporting_news": [
+            {
+              "title": "Himachal CM Sukhu inaugurates robotic surgery at IGMC Shimla",
+              "url": "https://www.tribuneindia.com/news/himachal/himachal-cm-sukhu-inaugurates-robotic-surgery-at-igmc-shimla/",
+              "source": "gdelt",
+              "published_at": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "state": "karnataka",
+      "district": "dakshina kannada",
+      "article_count": 1,
+      "top_problem": "Governance And Civic Administration",
+      "top_problem_reason": "1 articles were grouped under this issue in the last 5 days. Coverage is rising with 1 recent articles, sentiment is mixed, and the strongest signals were administrative failure, public grievance.",
+      "future_risk": "Governance And Civic Administration",
+      "future_risk_level": "watch",
+      "top_problems": [
+        {
+          "problem": "Governance And Civic Administration",
+          "frequency": 1,
+          "trend": "rising",
+          "sentiment": "mixed",
+          "impact_score": 3.7,
+          "reason": "1 articles were grouped under this issue in the last 5 days. Coverage is rising with 1 recent articles, sentiment is mixed, and the strongest signals were administrative failure, public grievance.",
+          "supporting_news": [
+            {
+              "title": "Man held for hoarding over 4,000 litres of diesel in Dakshina Kannada district: Cops | India News - Hindustan Times",
+              "url": "https://news.google.com/rss/articles/CBMi5AFBVV95cUxOTlNUWW1nZ0ZoT1R5ZXR6RjFlNnI3ZTZVM0RNbFBzRjF6aHRSbm96SlJCZ0dzY1F4T2lSaXZFWWhHUWxYaEQwN3BrU2hRVmVxNUFuV2FUNXZhV18yTTdYeFczTkYyeG9sUWpaZ1VjM2lXOE94cEJTSlpyTE82SFd0Z0RmT19LWXFRLVU1VFU4SE91VmpPaVJqZXJWUkdwSTFGNHdyNXgtZmFIYzA3UDMtQ3JnT2tzelZaR1N6TXl4ZnBpRnNGMVF1MlJubFMtMWNoam9mTF9JYVZuR29GVTVDNlVTeHHSAeQBQVVfeXFMTk5TVFltZ2dGaE9UeWV0ekYxZTZyN2U2VTNETWxQc0Yxemh0Um5vekpSQmdHc2NReE9pUml2RVloR1FsWGhEMDdwa1NoUVZlcTVBbldhVDV2YVdfMk03WHhXM05GMnhvbFFqWmdVYzNpVzhPeHBCU0packxPNkhXdGdEZk9fS1lxUS1VNVRVOEhPdVZqT2lSamVyVlJHcEkxRjR3cjV4LWZhSGMwN1AzLUNyZ09rc3pWWkdTek15eGZwaUZzRjFRdTJSbmxTLTFjaGpvZkxfSWFWbkdvRlU1QzZVU3hx?oc=5",
+              "source": "google_news",
+              "published_at": "2026-03-12T01:52:13+00:00"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "state": "meghalaya",
+      "district": "north cachar hills",
+      "article_count": 1,
+      "top_problem": "Governance And Civic Administration",
+      "top_problem_reason": "1 articles were grouped under this issue in the last 5 days. Coverage is rising with 1 recent articles, sentiment is mixed, and the strongest signals were administrative failure, public grievance.",
+      "future_risk": "Governance And Civic Administration",
+      "future_risk_level": "watch",
+      "top_problems": [
+        {
+          "problem": "Governance And Civic Administration",
+          "frequency": 1,
+          "trend": "rising",
+          "sentiment": "mixed",
+          "impact_score": 3.7,
+          "reason": "1 articles were grouped under this issue in the last 5 days. Coverage is rising with 1 recent articles, sentiment is mixed, and the strongest signals were administrative failure, public grievance.",
+          "supporting_news": [
+            {
+              "title": "2 Killed In Meghalaya Curfew Firing Linked To Tensions Over Garo Hills Polls - NDTV",
+              "url": "https://news.google.com/rss/articles/CBMi6wFBVV95cUxQM0ZEVnFtR0FQWjNUYk44T0lWeUZhcHBDQUx6LWNHUFZLVGNyY2dkZ3Qyd0FsLXEwVEw1emlVRkl6MEZsUlBvZ1RlWVF0V2JDMTl6UC16a3l1VUNDUVEtR2RyZ2NCVUQ5V3R2X08wTW9NUnJQajlxVVlTQjFWeXJyeXY3TXlKa2t4X3Q3VWdya3IwNVp2dGFHZjZ5aHBKOFpOVlZWSXY4dnh5cTRGYllLTklRcDFhbkxSOHB6TjM5QlpjUVd4Ylo0R3Y1NEhmOEk5dU9RRllQdTNSbFVoZWxtN3JGVDQwU28xXzlZ0gHzAUFVX3lxTE1odWxYYk5ZMlZ2QWM3OERrdkJ1NmtwSE5FM0xJb2tnbU5YZ3JURjc3bDc3ZFROUzJRRTJMOUhUYWpmRnROTXZtNlI4ZjNBNV81cnVacVpleDBtNU9UeWowRVc4Z1NvaWQ3T1VURXd6NnFzemJ1dWNMY21tSGRBdzJyV3JFSUlfZlhRSHlvTk5LdEZDM2pDZ0FBdkZWRnVtTDNURGpJa1FRb1JIdnZqem10NGFMT0otM2JsTl9WWjJWSUthdmx5aFVNYWZJLVhVM1FLZkY2VlFRb1FvWW9NSHFlNUd2cGQybnZLUFFDMGdtZ2phNA?oc=5",
+              "source": "google_news",
+              "published_at": "2026-03-10T06:56:40+00:00"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "state": "punjab",
+      "district": "anand",
+      "article_count": 1,
+      "top_problem": "Governance And Civic Administration",
+      "top_problem_reason": "1 articles were grouped under this issue in the last 5 days. Coverage is rising with 1 recent articles, sentiment is mixed, and the strongest signals were administrative failure, public grievance.",
+      "future_risk": "Governance And Civic Administration",
+      "future_risk_level": "watch",
+      "top_problems": [
+        {
+          "problem": "Governance And Civic Administration",
+          "frequency": 1,
+          "trend": "rising",
+          "sentiment": "mixed",
+          "impact_score": 3.7,
+          "reason": "1 articles were grouped under this issue in the last 5 days. Coverage is rising with 1 recent articles, sentiment is mixed, and the strongest signals were administrative failure, public grievance.",
+          "supporting_news": [
+            {
+              "title": "Anand Mahindra amazed by Manisha Kalyan\u2019s thunderous Cristiano Ronaldo-like free-kick. Who is this football sensation from Punjab?",
+              "url": "https://economictimes.indiatimes.com/news/new-updates/anand-mahindra-amazed-by-manisha-kalyans-thunderous-cristiano-ronaldo-like-free-kick-who-is-this-football-sensation-from-punjab/articleshow/129437391.cms",
+              "source": "newsapi",
+              "published_at": "2026-03-11T04:42:46+00:00"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "state": "punjab",
+      "district": "kolkata",
+      "article_count": 1,
+      "top_problem": "Governance And Civic Administration",
+      "top_problem_reason": "1 articles were grouped under this issue in the last 5 days. Coverage is rising with 1 recent articles, sentiment is mixed, and the strongest signals were administrative failure, public grievance.",
+      "future_risk": "Governance And Civic Administration",
+      "future_risk_level": "watch",
+      "top_problems": [
+        {
+          "problem": "Governance And Civic Administration",
+          "frequency": 1,
+          "trend": "rising",
+          "sentiment": "mixed",
+          "impact_score": 3.7,
+          "reason": "1 articles were grouped under this issue in the last 5 days. Coverage is rising with 1 recent articles, sentiment is mixed, and the strongest signals were administrative failure, public grievance.",
+          "supporting_news": [
+            {
+              "title": "\u2018I was born in Punjab, but made in Kolkata\u2019: Harbhajan Singh reflects on historic 2001 Eden Gardens Test",
+              "url": "https://timesofindia.indiatimes.com/sports/cricket/news/i-was-born-in-punjab-but-made-in-kolkata-harbhajan-singh-reflects-on-historic-2001-eden-gardens-test/articleshow/129437263.cms",
+              "source": "newsapi",
+              "published_at": "2026-03-11T04:37:23+00:00"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "state": "west bengal",
+      "district": "aizawal west",
+      "article_count": 1,
+      "top_problem": "Governance And Civic Administration",
+      "top_problem_reason": "1 articles were grouped under this issue in the last 5 days. Coverage is cooling with 0 recent articles, sentiment is mixed, and the strongest signals were administrative failure, public grievance.",
+      "future_risk": "Governance And Civic Administration",
+      "future_risk_level": "watch",
+      "top_problems": [
+        {
+          "problem": "Governance And Civic Administration",
+          "frequency": 1,
+          "trend": "cooling",
+          "sentiment": "mixed",
+          "impact_score": 2.2,
+          "reason": "1 articles were grouped under this issue in the last 5 days. Coverage is cooling with 0 recent articles, sentiment is mixed, and the strongest signals were administrative failure, public grievance.",
+          "supporting_news": [
+            {
+              "title": "West Bengal CM Mamata Banerjee coordinates with gas and CNG companies amid supply chain disruptions",
+              "url": "https://aninews.in/news/national/general-news/west-bengal-cm-mamata-banerjee-coordinates-with-gas-and-cng-companies-amid-supply-chain-disruptions20260311210307/",
+              "source": "gdelt",
+              "published_at": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "state": "delhi",
+      "district": "aizawal west",
+      "article_count": 1,
+      "top_problem": "Employment And Economy",
+      "top_problem_reason": "1 articles were grouped under this issue in the last 5 days. Coverage is rising with 1 recent articles, sentiment is mixed, and the strongest signals were inflation, prices, business.",
+      "future_risk": "Employment And Economy",
+      "future_risk_level": "high",
+      "top_problems": [
+        {
+          "problem": "Employment And Economy",
+          "frequency": 1,
+          "trend": "rising",
+          "sentiment": "mixed",
+          "impact_score": 17.7,
+          "reason": "1 articles were grouped under this issue in the last 5 days. Coverage is rising with 1 recent articles, sentiment is mixed, and the strongest signals were inflation, prices, business.",
+          "supporting_news": [
+            {
+              "title": "Supply woes, higher oil prices may hit growth, fuel inflation: Economists",
+              "url": "https://timesofindia.indiatimes.com/business/india-business/supply-woes-higher-oil-prices-may-hit-growth-fuel-inflation-economists/articleshow/129427636.cms",
+              "source": "newsapi",
+              "published_at": "2026-03-11T00:14:27+00:00"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "state": "delhi",
+      "district": "bangalore rural",
+      "article_count": 1,
+      "top_problem": "Employment And Economy",
+      "top_problem_reason": "1 articles were grouped under this issue in the last 5 days. Coverage is rising with 1 recent articles, sentiment is mixed, and the strongest signals were prices.",
+      "future_risk": "Employment And Economy",
+      "future_risk_level": "medium",
+      "top_problems": [
+        {
+          "problem": "Employment And Economy",
+          "frequency": 1,
+          "trend": "rising",
+          "sentiment": "mixed",
+          "impact_score": 5.7,
+          "reason": "1 articles were grouped under this issue in the last 5 days. Coverage is rising with 1 recent articles, sentiment is mixed, and the strongest signals were prices.",
+          "supporting_news": [
+            {
+              "title": "Petrol, Diesel Price today (March 11): Will you have to pay more for fuel? Check rates in Delhi, Mumbai, Chennai, Bangalore and other cities",
+              "url": "https://economictimes.indiatimes.com/news/new-updates/petrol-diesel-price-today-march-11-will-you-have-to-pay-more-for-fuel-check-rates-in-delhi-mumbai-chennai-bangalore-and-other-cities/articleshow/129433398.cms",
+              "source": "newsapi",
+              "published_at": "2026-03-11T02:59:32+00:00"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "state": "delhi",
+      "district": "imphal east",
+      "article_count": 1,
+      "top_problem": "Employment And Economy",
+      "top_problem_reason": "1 articles were grouped under this issue in the last 5 days. Coverage is rising with 1 recent articles, sentiment is strongly negative, and the strongest signals were prices.",
+      "future_risk": "Employment And Economy",
+      "future_risk_level": "medium",
+      "top_problems": [
+        {
+          "problem": "Employment And Economy",
+          "frequency": 1,
+          "trend": "rising",
+          "sentiment": "strongly negative",
+          "impact_score": 12.5,
+          "reason": "1 articles were grouped under this issue in the last 5 days. Coverage is rising with 1 recent articles, sentiment is strongly negative, and the strongest signals were prices.",
+          "supporting_news": [
+            {
+              "title": "LPG cylinder gas price today (March 11): Why is the Middle East war triggering LPG prices in India? Check rates in Delhi, Mumbai and other cities",
+              "url": "https://economictimes.indiatimes.com/news/new-updates/lpg-cylinder-gas-price-today-march-11-why-is-the-middle-east-wat-triggering-lpg-prices-in-india-check-rates-in-delhi-mumbai-and-other-cities/articleshow/129432112.cms",
+              "source": "newsapi",
+              "published_at": "2026-03-11T02:29:08+00:00"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "state": "haryana",
+      "district": "panipat",
+      "article_count": 1,
+      "top_problem": "Employment And Economy",
+      "top_problem_reason": "1 articles were grouped under this issue in the last 5 days. Coverage is rising with 1 recent articles, sentiment is mixed, and the strongest signals were jobs.",
+      "future_risk": "Employment And Economy",
+      "future_risk_level": "medium",
+      "top_problems": [
+        {
+          "problem": "Employment And Economy",
+          "frequency": 1,
+          "trend": "rising",
+          "sentiment": "mixed",
+          "impact_score": 11.2,
+          "reason": "1 articles were grouped under this issue in the last 5 days. Coverage is rising with 1 recent articles, sentiment is mixed, and the strongest signals were jobs.",
+          "supporting_news": [
+            {
+              "title": "India's textile recycling market projected to reach $3.5 bn by 2030, may add 1 lakh jobs: Report",
+              "url": "https://www.thehindubusinessline.com/economy/indias-textile-recycling-market-projected-to-reach-35-bn-by-2030-may-add-1-lakh-jobs-report/article70728288.ece",
+              "source": "newsapi",
+              "published_at": "2026-03-11T02:36:51+00:00"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "state": "assam",
+      "district": "barpeta",
+      "article_count": 1,
+      "top_problem": "Education",
+      "top_problem_reason": "1 articles were grouped under this issue in the last 5 days. Coverage is rising with 1 recent articles, sentiment is mixed, and the strongest signals were college.",
+      "future_risk": "Education",
+      "future_risk_level": "medium",
+      "top_problems": [
+        {
+          "problem": "Education",
+          "frequency": 1,
+          "trend": "rising",
+          "sentiment": "mixed",
+          "impact_score": 11.2,
+          "reason": "1 articles were grouped under this issue in the last 5 days. Coverage is rising with 1 recent articles, sentiment is mixed, and the strongest signals were college.",
+          "supporting_news": [
+            {
+              "title": "Assam to rename Fakhruddin Ali Ahmed Medical College as Barpeta Medical College",
+              "url": "https://economictimes.indiatimes.com/news/elections/assembly-elections/assam/assam-to-rename-fakhruddin-ali-ahmed-medical-college-as-barpeta-medical-college/articleshow/129437820.cms",
+              "source": "newsapi",
+              "published_at": "2026-03-11T04:44:07+00:00"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

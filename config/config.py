@@ -1,0 +1,32 @@
+import os
+
+BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+DEFAULT_SQLITE_PATH = os.path.join(BASE_DIR, "data", "district_news.db")
+DEFAULT_REPORT_PATH = os.path.join(BASE_DIR, "data", "reports", "daily_summary.json")
+DEFAULT_POSTGRES_URL = "postgresql+psycopg2://postgres:postgres@localhost:5432/district_news_ai"
+RETENTION_DAYS = int(os.getenv("RETENTION_DAYS", "5"))
+PIPELINE_SCHEDULE_HOUR = int(os.getenv("PIPELINE_SCHEDULE_HOUR", "6"))
+DAILY_REPORT_PATH = os.getenv("DAILY_REPORT_PATH", DEFAULT_REPORT_PATH)
+NEWSAPI_MAX_PAGES = int(os.getenv("NEWSAPI_MAX_PAGES", "5"))
+MAX_STATE_QUERIES = int(os.getenv("MAX_STATE_QUERIES", "36"))
+MAX_DISTRICT_QUERIES = int(os.getenv("MAX_DISTRICT_QUERIES", "75"))
+GDELT_MAX_RECORDS = int(os.getenv("GDELT_MAX_RECORDS", "250"))
+GOOGLE_STATE_QUERIES = int(os.getenv("GOOGLE_STATE_QUERIES", "20"))
+GOOGLE_DISTRICT_QUERIES = int(os.getenv("GOOGLE_DISTRICT_QUERIES", "30"))
+GDELT_STATE_QUERIES = int(os.getenv("GDELT_STATE_QUERIES", "30"))
+GDELT_DISTRICT_QUERIES = int(os.getenv("GDELT_DISTRICT_QUERIES", "40"))
+COLLECTOR_WORKERS = int(os.getenv("COLLECTOR_WORKERS", "3"))
+REQUEST_WORKERS = int(os.getenv("REQUEST_WORKERS", "8"))
+GDELT_WINDOW_HOURS = int(os.getenv("GDELT_WINDOW_HOURS", "6"))
+PIPELINE_BATCH_SIZE = int(os.getenv("PIPELINE_BATCH_SIZE", "128"))
+DB_WRITE_CHUNK_SIZE = int(os.getenv("DB_WRITE_CHUNK_SIZE", "1000"))
+STATE_CONFIDENCE_THRESHOLD = float(os.getenv("STATE_CONFIDENCE_THRESHOLD", "0.45"))
+DISTRICT_CONFIDENCE_THRESHOLD = float(os.getenv("DISTRICT_CONFIDENCE_THRESHOLD", "0.6"))
+SQLITE_MIGRATION_URL = os.getenv("SQLITE_MIGRATION_URL", f"sqlite:///{DEFAULT_SQLITE_PATH}")
+
+DATABASE_URL = os.getenv(
+"DATABASE_URL",
+f"sqlite:///{DEFAULT_SQLITE_PATH}"
+)
+
+NEWS_API_KEY = "819d89cc05b24d38a5eb1dd822b34c0a"
