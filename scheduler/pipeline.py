@@ -1,7 +1,6 @@
-import json
 import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from pathlib import Path
 
 if __package__ in {None, ""}:
@@ -16,26 +15,17 @@ from processing.ner_location import extract_locations_batch
 from processing.geo_resolver import resolve_location_details
 from embedding.embedding_model import generate_embeddings
 
-from config.config import COLLECTOR_WORKERS, DAILY_FOCUS_DISTRICT_BATCH, DAILY_FOCUS_STATE_BATCH, DB_WRITE_CHUNK_SIZE, PIPELINE_BATCH_SIZE, RETENTION_DAYS
-from database.db import engine
-from database.schema import ensure_schema
+from config.config import COLLECTOR_WORKERS, DAILY_FOCUS_DISTRICT_BATCH, DAILY_FOCUS_STATE_BATCH, PIPELINE_BATCH_SIZE, RETENTION_DAYS
+from database.news_store import (
+    append_articles,
+    delete_expired_news as delete_expired_news_store,
+    ensure_data_store_ready,
+    get_assigned_state_district_pairs,
+    get_existing_urls,
+    get_pending_location_rows,
+    update_article_location,
+)
 import pandas as pd
-from pandas.errors import DatabaseError
-from sqlalchemy import inspect, text
-from sqlalchemy.exc import SQLAlchemyError
-
-
-def _get_existing_urls():
-
-    try:
-        existing = pd.read_sql("SELECT url FROM news_articles", engine)
-    except (SQLAlchemyError, DatabaseError):
-        return set()
-
-    return {
-        value for value in existing["url"].dropna().tolist()
-        if value
-    }
 
 
 def _collect_from_sources():
@@ -128,102 +118,41 @@ def _prepare_articles(unique_news, existing_urls):
 
 def _write_articles(df):
 
-    if df.empty:
-        return 0
-
-    write_df = df.copy()
-    write_df["embedding"] = write_df["embedding"].apply(json.dumps)
-    write_df["published_at"] = pd.to_datetime(write_df["published_at"], utc=True, errors="coerce")
-    write_df["published_at"] = write_df["published_at"].where(write_df["published_at"].notna(), None)
-
-    table_columns = {
-        column["name"] for column in inspect(engine).get_columns("news_articles")
-    }
-
-    if "ingested_at" in table_columns:
-        write_df["ingested_at"] = datetime.now(timezone.utc)
-
-    write_df = write_df[[column for column in write_df.columns if column in table_columns]]
-
-    write_df.to_sql(
-        "news_articles",
-        engine,
-        if_exists="append",
-        index=False,
-        chunksize=DB_WRITE_CHUNK_SIZE,
-        method="multi",
-    )
-
-    return len(write_df)
+    return append_articles(df)
 
 
 def delete_expired_news(retention_days=RETENTION_DAYS):
 
-    cutoff = (datetime.now(timezone.utc) - timedelta(days=retention_days)).strftime("%Y-%m-%d %H:%M:%S")
-
-    try:
-        with engine.begin() as conn:
-            result = conn.execute(
-                text("DELETE FROM news_articles WHERE published_at IS NOT NULL AND published_at < :cutoff"),
-                {"cutoff": cutoff},
-            )
-            return result.rowcount or 0
-    except SQLAlchemyError:
-        return 0
+    return delete_expired_news_store(retention_days)
 
 
 def backfill_missing_locations():
 
-    try:
-        pending_df = pd.read_sql(
-            "SELECT url, source, title, content, state, district, state_confidence, district_confidence FROM news_articles WHERE state IS NULL OR district IS NULL",
-            engine,
-        )
-    except (SQLAlchemyError, DatabaseError):
-        return 0
+    pending_df = get_pending_location_rows()
 
     if pending_df.empty:
         return 0
 
     updated_rows = 0
 
-    with engine.begin() as conn:
-        for row in pending_df.itertuples(index=False):
-            combined_text = f"{row.title or ''} {row.content or ''}"
-            location_details = resolve_location_details([], text=combined_text, title=row.title or "")
-            state = location_details["state"]
-            district = location_details["district"]
+    for row in pending_df.itertuples(index=False):
+        combined_text = f"{row.title or ''} {row.content or ''}"
+        location_details = resolve_location_details([], text=combined_text, title=row.title or "")
+        state = location_details["state"]
+        district = location_details["district"]
 
-            if not state and not district:
-                continue
+        if not state and not district:
+            continue
 
-            conn.execute(
-                text(
-                    """
-                    UPDATE news_articles
-                    SET state = COALESCE(state, :state),
-                        district = COALESCE(district, :district),
-                        state_confidence = CASE
-                            WHEN state IS NULL AND :state IS NOT NULL THEN :state_confidence
-                            ELSE state_confidence
-                        END,
-                        district_confidence = CASE
-                            WHEN district IS NULL AND :district IS NOT NULL THEN :district_confidence
-                            ELSE district_confidence
-                        END
-                    WHERE url = :url AND source = :source
-                    """
-                ),
-                {
-                    "state": state,
-                    "district": district,
-                    "state_confidence": location_details["state_confidence"],
-                    "district_confidence": location_details["district_confidence"],
-                    "url": row.url,
-                    "source": row.source,
-                },
-            )
-            updated_rows += 1
+        update_article_location(
+            url=row.url,
+            source=row.source,
+            state=state,
+            district=district,
+            state_confidence=location_details["state_confidence"],
+            district_confidence=location_details["district_confidence"],
+        )
+        updated_rows += 1
 
     return updated_rows
 
@@ -247,19 +176,9 @@ def _load_master_districts():
 def _select_focus_districts(max_districts, state_batch):
 
     master = _load_master_districts()
+    assigned = get_assigned_state_district_pairs()
 
-    try:
-        assigned = pd.read_sql(
-            """
-            SELECT lower(trim(state)) AS state, lower(trim(district)) AS district
-            FROM news_articles
-            WHERE state IS NOT NULL AND trim(state) <> ''
-              AND district IS NOT NULL AND trim(district) <> ''
-            GROUP BY lower(trim(state)), lower(trim(district))
-            """,
-            engine,
-        )
-    except (SQLAlchemyError, DatabaseError):
+    if assigned.empty:
         return []
 
     coverage = master.merge(assigned, on=["state", "district"], how="left", indicator=True)
@@ -296,7 +215,7 @@ def _collect_focus_districts():
 
 def run_pipeline():
 
-    ensure_schema(engine)
+    ensure_data_store_ready()
     delete_expired_news()
 
     news = _collect_from_sources()
@@ -318,7 +237,7 @@ def run_pipeline():
         seen_keys.add(unique_key)
         unique_news.append(article)
 
-    existing_urls = _get_existing_urls()
+    existing_urls = get_existing_urls()
 
     df = _prepare_articles(unique_news, existing_urls)
 

@@ -4,6 +4,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 DEFAULT_SQLITE_PATH = os.path.join(BASE_DIR, "data", "district_news.db")
 DEFAULT_REPORT_PATH = os.path.join(BASE_DIR, "data", "reports", "daily_summary.json")
 DEFAULT_POSTGRES_URL = "postgresql+psycopg2://postgres:postgres@localhost:5432/district_news_ai"
+DEFAULT_NEO4J_URI = "bolt://localhost:7687"
 RETENTION_DAYS = int(os.getenv("RETENTION_DAYS", "5"))
 PIPELINE_SCHEDULE_HOUR = int(os.getenv("PIPELINE_SCHEDULE_HOUR", "6"))
 PIPELINE_RUN_EVERY_MINUTES = int(os.getenv("PIPELINE_RUN_EVERY_MINUTES", "60"))
@@ -48,9 +49,12 @@ STATE_CONFIDENCE_THRESHOLD = float(os.getenv("STATE_CONFIDENCE_THRESHOLD", "0.45
 DISTRICT_CONFIDENCE_THRESHOLD = float(os.getenv("DISTRICT_CONFIDENCE_THRESHOLD", "0.45"))
 SQLITE_MIGRATION_URL = os.getenv("SQLITE_MIGRATION_URL", f"sqlite:///{DEFAULT_SQLITE_PATH}")
 
-DATABASE_URL = os.getenv(
-"DATABASE_URL",
-f"sqlite:///{DEFAULT_SQLITE_PATH}"
-)
+DB_BACKEND = os.getenv("DB_BACKEND", "neo4j").strip().lower()
+DATABASE_URL = os.getenv("DATABASE_URL", DEFAULT_POSTGRES_URL)
+
+NEO4J_URI = os.getenv("NEO4J_URI", DEFAULT_NEO4J_URI)
+NEO4J_USER = os.getenv("NEO4J_USER", "neo4j")
+NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD", "password")
+NEO4J_DATABASE = os.getenv("NEO4J_DATABASE", "neo4j")
 
 NEWS_API_KEY = "819d89cc05b24d38a5eb1dd822b34c0a"

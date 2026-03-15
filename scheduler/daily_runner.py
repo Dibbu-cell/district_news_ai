@@ -7,9 +7,6 @@ from apscheduler.schedulers.blocking import BlockingScheduler
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parent.parent))
 
-import pandas as pd
-from sqlalchemy import text
-
 from analytics.district_insights import build_daily_summary_report
 from config.config import (
     DAILY_REPORT_PATH,
@@ -17,26 +14,15 @@ from config.config import (
     PIPELINE_SCHEDULE_HOUR,
     RETENTION_DAYS,
 )
-from database.db import engine
+from database.news_store import ensure_data_store_ready, load_recent_articles
 from processing.geo_resolver import normalize_location_name
 from scheduler.pipeline import run_pipeline
 
 
 def export_daily_summary_report(state=None, limit=100):
 
-    cutoff_query_time = pd.Timestamp.utcnow() - pd.Timedelta(days=RETENTION_DAYS)
-    recent_df = pd.read_sql(
-        text(
-            """
-            SELECT title, content, url, source, state, district, published_at
-            FROM news_articles
-            WHERE (published_at IS NULL OR published_at > :cutoff)
-            """
-        ),
-        engine,
-        params={"cutoff": cutoff_query_time.strftime("%Y-%m-%d %H:%M:%S")},
-    )
     normalized_state = None if state is None else normalize_location_name(state)
+    recent_df = load_recent_articles(RETENTION_DAYS, normalized_state)
     report = build_daily_summary_report(recent_df, RETENTION_DAYS, normalized_state, limit)
     report_path = Path(DAILY_REPORT_PATH)
     report_path.parent.mkdir(parents=True, exist_ok=True)
@@ -47,6 +33,7 @@ def export_daily_summary_report(state=None, limit=100):
 
 def run_daily_job():
 
+    ensure_data_store_ready()
     result = run_pipeline()
     report_path = export_daily_summary_report()
     print(f"Daily pipeline completed: {result}; report written to {report_path}")

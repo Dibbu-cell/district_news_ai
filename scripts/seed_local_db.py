@@ -1,14 +1,12 @@
-import json
 import sys
 from pathlib import Path
 
 import pandas as pd
-from sqlalchemy import inspect, text
 
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parent.parent))
 
-from database.db import engine
+from database.news_store import append_articles, ensure_data_store_ready, get_existing_urls
 
 
 SEED_ROWS = [
@@ -56,17 +54,17 @@ SEED_ROWS = [
 
 
 def seed_local_db():
-    table_names = inspect(engine).get_table_names()
+    ensure_data_store_ready()
 
-    if "news_articles" in table_names:
-        with engine.begin() as conn:
-            conn.execute(text("DELETE FROM news_articles WHERE source = 'seed'"))
+    existing_urls = get_existing_urls()
+    pending_rows = [row for row in SEED_ROWS if row["url"] not in existing_urls]
 
-    seed_df = pd.DataFrame(SEED_ROWS)
-    seed_df["embedding"] = seed_df["embedding"].apply(json.dumps)
-    seed_df.to_sql("news_articles", engine, if_exists="append", index=False)
+    if not pending_rows:
+        print("Seed rows already present; no new rows inserted.")
+        return
 
-    print(f"Inserted {len(seed_df)} seed rows into news_articles")
+    inserted = append_articles(pd.DataFrame(pending_rows))
+    print(f"Inserted {inserted} seed rows into news_articles")
 
 
 if __name__ == "__main__":
