@@ -11,7 +11,12 @@ import pandas as pd
 from sqlalchemy import text
 
 from analytics.district_insights import build_daily_summary_report
-from config.config import DAILY_REPORT_PATH, PIPELINE_SCHEDULE_HOUR, RETENTION_DAYS
+from config.config import (
+    DAILY_REPORT_PATH,
+    PIPELINE_RUN_EVERY_MINUTES,
+    PIPELINE_SCHEDULE_HOUR,
+    RETENTION_DAYS,
+)
 from database.db import engine
 from processing.geo_resolver import normalize_location_name
 from scheduler.pipeline import run_pipeline
@@ -50,8 +55,14 @@ def run_daily_job():
 def start_scheduler():
 
     scheduler = BlockingScheduler(timezone="UTC")
-    scheduler.add_job(run_daily_job, "cron", hour=PIPELINE_SCHEDULE_HOUR, minute=0)
-    print(f"Scheduler started. Daily pipeline will run at {PIPELINE_SCHEDULE_HOUR:02d}:00 UTC")
+
+    if PIPELINE_RUN_EVERY_MINUTES > 0:
+        scheduler.add_job(run_daily_job, "interval", minutes=PIPELINE_RUN_EVERY_MINUTES)
+        print(f"Scheduler started. Pipeline will run every {PIPELINE_RUN_EVERY_MINUTES} minutes (UTC).")
+    else:
+        scheduler.add_job(run_daily_job, "cron", hour=PIPELINE_SCHEDULE_HOUR, minute=0)
+        print(f"Scheduler started. Daily pipeline will run at {PIPELINE_SCHEDULE_HOUR:02d}:00 UTC")
+
     scheduler.start()
 
 

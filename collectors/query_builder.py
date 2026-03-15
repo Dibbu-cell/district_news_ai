@@ -9,6 +9,8 @@ from config.config import (
     GOOGLE_STATE_QUERIES,
     MAX_DISTRICT_QUERIES,
     MAX_STATE_QUERIES,
+    PRIORITY_DISTRICTS,
+    PRIORITY_STATES,
 )
 from processing.geo_resolver import normalize_location_name
 
@@ -39,8 +41,32 @@ def _load_location_frame():
 
 
 LOCATION_FRAME = _load_location_frame()
-STATE_NAMES = sorted(LOCATION_FRAME["state"].dropna().unique().tolist())[:MAX_STATE_QUERIES]
-DISTRICT_NAMES = sorted(LOCATION_FRAME["district"].dropna().unique().tolist())[:MAX_DISTRICT_QUERIES]
+ALL_STATE_NAMES = sorted(LOCATION_FRAME["state"].dropna().unique().tolist())
+ALL_DISTRICT_NAMES = sorted(LOCATION_FRAME["district"].dropna().unique().tolist())
+
+
+def _prioritize_values(values, priority_values, max_items):
+
+    ordered = []
+    seen = set()
+
+    for value in priority_values:
+        normalized_value = normalize_location_name(value)
+
+        if normalized_value in values and normalized_value not in seen:
+            ordered.append(normalized_value)
+            seen.add(normalized_value)
+
+    for value in values:
+        if value not in seen:
+            ordered.append(value)
+            seen.add(value)
+
+    return ordered[:max_items]
+
+
+STATE_NAMES = _prioritize_values(ALL_STATE_NAMES, PRIORITY_STATES, MAX_STATE_QUERIES)
+DISTRICT_NAMES = _prioritize_values(ALL_DISTRICT_NAMES, PRIORITY_DISTRICTS, MAX_DISTRICT_QUERIES)
 
 
 def build_state_terms(limit=None):
@@ -63,6 +89,32 @@ def build_district_terms(limit=None):
     return district_terms
 
 
+def build_district_civic_terms(limit=None):
+    """Alternative query templates for district-level civic/local news."""
+
+    civic_terms = [f"{district} civic issues news" for district in DISTRICT_NAMES]
+
+    if limit is not None:
+        return civic_terms[:limit]
+
+    return civic_terms
+
+
+def build_district_local_terms(limit=None):
+    """State-qualified district queries to reduce geo-ambiguity."""
+
+    state_lookup = dict(zip(LOCATION_FRAME["district"], LOCATION_FRAME["state"]))
+    local_terms = [
+        f"{district} {state_lookup.get(district, '')} news".strip()
+        for district in DISTRICT_NAMES
+    ]
+
+    if limit is not None:
+        return local_terms[:limit]
+
+    return local_terms
+
+
 def build_newsapi_terms():
 
     return BASE_TERMS + build_state_terms(limit=12)
@@ -82,5 +134,7 @@ def build_google_news_terms():
     terms = list(BASE_TERMS)
     terms.extend(build_state_terms(limit=GOOGLE_STATE_QUERIES))
     terms.extend(build_district_terms(limit=GOOGLE_DISTRICT_QUERIES))
+    terms.extend(build_district_civic_terms(limit=GOOGLE_DISTRICT_QUERIES // 2))
+    terms.extend(build_district_local_terms(limit=GOOGLE_DISTRICT_QUERIES // 2))
 
     return terms

@@ -1,0 +1,8 @@
+.venv/
+**/__pycache__/
+*.py[cod]
+
+# Local/generated data artifacts
+data/*.db
+data/reports/*.csv
+data/reports/*.json

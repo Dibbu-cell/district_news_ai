@@ -15,6 +15,11 @@ AMBIGUOUS_DISTRICTS = {
 }
 
 STATE_ALIASES = {
+    "andhra": "andhra pradesh",
+    "ap": "andhra pradesh",
+    "uttar pradesh": "uttar pradesh",
+    "up": "uttar pradesh",
+    "delhi ncr": "delhi",
     "odisha": "orissa",
     "orissa": "orissa",
     "uttarakhand": "uttarakhand",
