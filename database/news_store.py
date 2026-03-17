@@ -82,6 +82,27 @@ def ensure_data_store_ready() -> None:
             REQUIRE d.full_key IS UNIQUE
             """
         )
+        session.run(
+            """
+            CREATE CONSTRAINT issue_daily_count_key_unique IF NOT EXISTS
+            FOR (h:IssueDailyCount)
+            REQUIRE h.count_key IS UNIQUE
+            """
+        )
+        session.run(
+            """
+            CREATE INDEX issue_daily_count_date IF NOT EXISTS
+            FOR (h:IssueDailyCount)
+            ON (h.date)
+            """
+        )
+        session.run(
+            """
+            CREATE INDEX issue_daily_count_state_district IF NOT EXISTS
+            FOR (h:IssueDailyCount)
+            ON (h.state, h.district)
+            """
+        )
 
 
 def get_existing_urls() -> set[str]:
@@ -381,10 +402,32 @@ def _records_to_df(records: Iterable[dict]) -> pd.DataFrame:
     rows = list(records)
 
     if not rows:
-        return pd.DataFrame(columns=["title", "content", "url", "source", "state", "district", "published_at"])
+        return pd.DataFrame(
+            columns=[
+                "title",
+                "content",
+                "url",
+                "source",
+                "state",
+                "district",
+                "state_confidence",
+                "district_confidence",
+                "published_at",
+            ]
+        )
 
     frame = pd.DataFrame(rows)
-    expected_columns = ["title", "content", "url", "source", "state", "district", "published_at"]
+    expected_columns = [
+        "title",
+        "content",
+        "url",
+        "source",
+        "state",
+        "district",
+        "state_confidence",
+        "district_confidence",
+        "published_at",
+    ]
 
     for column in expected_columns:
         if column not in frame.columns:
@@ -393,13 +436,156 @@ def _records_to_df(records: Iterable[dict]) -> pd.DataFrame:
     return frame[expected_columns]
 
 
+def _normalize_history_row(row: dict) -> dict | None:
+    date_value = str(row.get("date") or "").strip()
+    state = str(row.get("state") or "").strip().lower()
+    district = str(row.get("district") or "").strip().lower()
+    issue = str(row.get("issue") or "").strip().lower()
+
+    if not date_value or not state or not district or not issue:
+        return None
+
+    return {
+        "count_key": f"{date_value}::{state}::{district}::{issue}",
+        "date": date_value,
+        "state": state,
+        "district": district,
+        "issue": issue,
+        "count": int(row.get("count", 0) or 0),
+    }
+
+
+def upsert_issue_history(rows: list[dict], retention_days: int) -> int:
+    normalized_rows = []
+
+    for row in rows:
+        normalized = _normalize_history_row(row)
+
+        if normalized is not None:
+            normalized_rows.append(normalized)
+
+    if not normalized_rows:
+        return 0
+
+    retained_cutoff = (datetime.now(timezone.utc).date() - timedelta(days=retention_days)).isoformat()
+
+    if not using_neo4j_backend():
+        with _SQL_ENGINE.begin() as conn:
+            conn.execute(
+                text("DELETE FROM issue_daily_history WHERE date < :cutoff"),
+                {"cutoff": retained_cutoff},
+            )
+
+            for row in normalized_rows:
+                conn.execute(
+                    text("DELETE FROM issue_daily_history WHERE count_key = :count_key"),
+                    {"count_key": row["count_key"]},
+                )
+
+            pd.DataFrame(normalized_rows).to_sql(
+                "issue_daily_history",
+                _SQL_ENGINE,
+                if_exists="append",
+                index=False,
+                chunksize=1000,
+                method="multi",
+            )
+
+        return len(normalized_rows)
+
+    driver = _get_driver()
+
+    with driver.session(database=NEO4J_DATABASE) as session:
+        session.run(
+            """
+            MATCH (h:IssueDailyCount)
+            WHERE h.date < $cutoff
+            DETACH DELETE h
+            """,
+            cutoff=retained_cutoff,
+        )
+        session.run(
+            """
+            UNWIND $rows AS row
+            MERGE (h:IssueDailyCount {count_key: row.count_key})
+            SET h.date = row.date,
+                h.state = row.state,
+                h.district = row.district,
+                h.issue = row.issue,
+                h.count = row.count,
+                h.updated_at = $updated_at
+            """,
+            rows=normalized_rows,
+            updated_at=datetime.now(timezone.utc).isoformat(),
+        )
+
+    return len(normalized_rows)
+
+
+def load_issue_history(state: str, district: str, days: int = 30) -> list[dict]:
+    normalized_state = str(state or "").strip().lower()
+    normalized_district = str(district or "").strip().lower()
+
+    if not normalized_state or not normalized_district:
+        return []
+
+    cutoff = (datetime.now(timezone.utc).date() - timedelta(days=days)).isoformat()
+
+    if not using_neo4j_backend():
+        try:
+            rows = pd.read_sql(
+                text(
+                    """
+                    SELECT date, state, district, issue, count
+                    FROM issue_daily_history
+                    WHERE lower(trim(state)) = :state
+                      AND lower(trim(district)) = :district
+                      AND date >= :cutoff
+                    ORDER BY date ASC
+                    """
+                ),
+                _SQL_ENGINE,
+                params={"state": normalized_state, "district": normalized_district, "cutoff": cutoff},
+            )
+        except (SQLAlchemyError, DatabaseError):
+            return []
+
+        return rows.to_dict(orient="records")
+
+    driver = _get_driver()
+
+    with driver.session(database=NEO4J_DATABASE) as session:
+        records = [
+            record.data()
+            for record in session.run(
+                """
+                MATCH (h:IssueDailyCount)
+                WHERE toLower(h.state) = toLower($state)
+                  AND toLower(h.district) = toLower($district)
+                  AND h.date >= $cutoff
+                RETURN h.date AS date,
+                       h.state AS state,
+                       h.district AS district,
+                       h.issue AS issue,
+                       h.count AS count
+                ORDER BY h.date ASC
+                """,
+                state=normalized_state,
+                district=normalized_district,
+                cutoff=cutoff,
+            )
+        ]
+
+    return records
+
+
 def load_recent_articles(retention_days: int, state: str | None = None) -> pd.DataFrame:
     cutoff = (datetime.utcnow() - timedelta(days=retention_days)).strftime("%Y-%m-%d %H:%M:%S")
 
     if not using_neo4j_backend():
         query = text(
             """
-            SELECT title, content, url, source, state, district, published_at
+            SELECT title, content, url, source, state, district, state_confidence, district_confidence, published_at
             FROM news_articles
             WHERE (published_at IS NULL OR published_at > :cutoff)
             """
@@ -424,6 +610,8 @@ def load_recent_articles(retention_days: int, state: str | None = None) -> pd.Da
                a.source AS source,
                a.state AS state,
                a.district AS district,
+             a.state_confidence AS state_confidence,
+             a.district_confidence AS district_confidence,
                a.published_at AS published_at
     """
 
@@ -439,7 +627,7 @@ def load_district_articles(retention_days: int, state: str, district: str, varia
     if not using_neo4j_backend():
         direct_query = text(
             """
-            SELECT title, content, url, source, state, district, published_at
+            SELECT title, content, url, source, state, district, state_confidence, district_confidence, published_at
             FROM news_articles
             WHERE district=:district
             AND lower(trim(state))=:state
@@ -463,6 +651,7 @@ def load_district_articles(retention_days: int, state: str, district: str, varia
             variant_query = text(
                 f"""
                 SELECT title, content, url, source, state, district, published_at
+                                         , state_confidence, district_confidence
                 FROM news_articles
                 WHERE lower(trim(state))=:state
                   AND ({' OR '.join(conditions)})
@@ -477,6 +666,7 @@ def load_district_articles(retention_days: int, state: str, district: str, varia
         fallback_query = text(
             """
             SELECT title, content, url, source, state, district, published_at
+                                 , state_confidence, district_confidence
             FROM news_articles
             WHERE (lower(trim(state))=:state OR state IS NULL OR trim(state)='')
               AND (
@@ -518,6 +708,8 @@ def load_district_articles(retention_days: int, state: str, district: str, varia
                        a.source AS source,
                        a.state AS state,
                        a.district AS district,
+                      a.state_confidence AS state_confidence,
+                      a.district_confidence AS district_confidence,
                        a.published_at AS published_at
                 """,
                 cutoff=cutoff,
@@ -544,6 +736,8 @@ def load_district_articles(retention_days: int, state: str, district: str, varia
                            a.source AS source,
                            a.state AS state,
                            a.district AS district,
+                              a.state_confidence AS state_confidence,
+                              a.district_confidence AS district_confidence,
                            a.published_at AS published_at
                     """,
                     cutoff=cutoff,
@@ -572,6 +766,8 @@ def load_district_articles(retention_days: int, state: str, district: str, varia
                        a.source AS source,
                        a.state AS state,
                        $district AS district,
+                      a.state_confidence AS state_confidence,
+                      a.district_confidence AS district_confidence,
                        a.published_at AS published_at
                 """,
                 cutoff=cutoff,

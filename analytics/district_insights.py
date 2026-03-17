@@ -4,6 +4,8 @@ import pandas as pd
 from sklearn.cluster import MiniBatchKMeans
 from sklearn.feature_extraction.text import TfidfVectorizer
 
+from analytics.geo_quality import apply_confidence_weighted_fallback
+
 
 NEGATIVE_WORDS = {
     "accident", "anger", "attack", "breakdown", "collapsed", "complaint", "crime", "crisis",
@@ -227,6 +229,8 @@ def _build_problem_rows(analysis_df, retention_days):
 
 
 def build_district_insights(df, state, district, retention_days):
+    df = apply_confidence_weighted_fallback(df)
+
     if df.empty:
         return {
             "state": state,
@@ -286,6 +290,8 @@ def build_district_insights(df, state, district, retention_days):
 
 
 def build_daily_summary_report(df, retention_days, state_filter=None, limit=25):
+    df = apply_confidence_weighted_fallback(df)
+
     if df.empty:
         return {
             "window_days": retention_days,

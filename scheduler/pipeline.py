@@ -14,6 +14,7 @@ from processing.text_cleaner import clean_text
 from processing.ner_location import extract_locations_batch
 from processing.geo_resolver import resolve_location_details
 from embedding.embedding_model import generate_embeddings
+from analytics.issue_detection import refresh_issue_history_from_articles
 
 from config.config import COLLECTOR_WORKERS, DAILY_FOCUS_DISTRICT_BATCH, DAILY_FOCUS_STATE_BATCH, PIPELINE_BATCH_SIZE, RETENTION_DAYS
 from database.news_store import (
@@ -22,6 +23,7 @@ from database.news_store import (
     ensure_data_store_ready,
     get_assigned_state_district_pairs,
     get_existing_urls,
+    load_recent_articles,
     get_pending_location_rows,
     update_article_location,
 )
@@ -216,6 +218,7 @@ def _collect_focus_districts():
 def run_pipeline():
 
     ensure_data_store_ready()
+    refresh_issue_history_from_articles(load_recent_articles(RETENTION_DAYS))
     delete_expired_news()
 
     news = _collect_from_sources()
@@ -247,6 +250,7 @@ def run_pipeline():
     inserted_count = _write_articles(df)
 
     backfilled_count = backfill_missing_locations()
+    refresh_issue_history_from_articles(load_recent_articles(RETENTION_DAYS))
 
     return {
         "collected": len(news),

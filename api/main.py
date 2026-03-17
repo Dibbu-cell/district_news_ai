@@ -1,11 +1,24 @@
 from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
 
+from analytics.district_alerts import build_district_alert
 from analytics.district_insights import build_daily_summary_report, build_district_insights
+from analytics.geo_quality import apply_confidence_weighted_fallback
+from analytics.issue_detection import build_issue_detection_summary
+from analytics.policy_recommendation import build_policy_recommendations
+from analytics.protest_risk import predict_protest_risk, train_and_save_risk_model
+from analytics.public_mood import build_public_mood_summary
+from analytics.quality_report import build_daily_quality_report, build_source_mapping_audit_report
 from config.config import RETENTION_DAYS
 from database.news_store import load_district_articles, load_recent_articles
 from processing.geo_resolver import normalize_location_name, state_aliases
 
 app = FastAPI()
+
+
+class RiskModelTrainingPayload(BaseModel):
+    model_type: str = "logistic_regression"
+    training_rows: list[dict]
 
 
 def _district_variants(district: str):
@@ -38,12 +51,14 @@ def _load_recent_articles(state=None):
         normalized_state = normalize_location_name(state)
         normalized_state = state_aliases.get(normalized_state, normalized_state)
 
-    return load_recent_articles(RETENTION_DAYS, normalized_state)
+    raw_df = load_recent_articles(RETENTION_DAYS, normalized_state)
+    return apply_confidence_weighted_fallback(raw_df)
 
 def _load_district_articles(state, district):
 
     variants = _district_variants(district)
-    return load_district_articles(RETENTION_DAYS, state, district, variants)
+    raw_df = load_district_articles(RETENTION_DAYS, state, district, variants)
+    return apply_confidence_weighted_fallback(raw_df)
 
 
 def _analyze_district(state, district):
@@ -113,8 +128,207 @@ def get_daily_summary(state: str | None = None, limit: int = 25):
     return build_daily_summary_report(recent_df, RETENTION_DAYS, normalized_state, limit=max(1, min(limit, 100)))
 
 
+@app.get("/reports/daily-quality")
+def get_daily_quality_report(state: str | None = None):
+
+    normalized_state = None if state is None else normalize_location_name(state)
+
+    # Quality report needs the raw view to surface low-confidence and unmapped records.
+    raw_df = load_recent_articles(RETENTION_DAYS, normalized_state)
+
+    return build_daily_quality_report(raw_df, RETENTION_DAYS)
+
+
+@app.get("/reports/source-mapping-audit")
+def get_source_mapping_audit(state: str | None = None, limit: int = 25):
+
+    normalized_state = None if state is None else normalize_location_name(state)
+    raw_df = load_recent_articles(RETENTION_DAYS, normalized_state)
+
+    return build_source_mapping_audit_report(raw_df, RETENTION_DAYS, limit=max(1, min(limit, 100)))
+
+
 @app.get("/district/{district}")
 
 def get_problems(district: str, state: str):
 
     return _analyze_district(state, district)
+
+
+@app.get("/analysis/issues")
+def get_issue_detection(state: str, district: str):
+
+    normalized_state = normalize_location_name(state)
+    normalized_state = state_aliases.get(normalized_state, normalized_state)
+    normalized_district = normalize_location_name(district)
+
+    if not normalized_state or not normalized_district:
+        raise HTTPException(status_code=400, detail="State and district are required.")
+
+    df = _load_district_articles(normalized_state, normalized_district)
+    issue_summary = build_issue_detection_summary(df)
+
+    return {
+        "state": normalized_state,
+        "district": normalized_district,
+        **issue_summary,
+    }
+
+
+@app.get("/analysis/public-mood")
+def get_public_mood(state: str, district: str):
+
+    normalized_state = normalize_location_name(state)
+    normalized_state = state_aliases.get(normalized_state, normalized_state)
+    normalized_district = normalize_location_name(district)
+
+    if not normalized_state or not normalized_district:
+        raise HTTPException(status_code=400, detail="State and district are required.")
+
+    df = _load_district_articles(normalized_state, normalized_district)
+    mood_summary = build_public_mood_summary(df)
+
+    return {
+        "state": normalized_state,
+        "district": normalized_district,
+        **mood_summary,
+    }
+
+
+@app.get("/analysis/protest-risk")
+def get_protest_risk(
+    state: str,
+    district: str,
+    issue_spike_ratio: float,
+    negative_sentiment_score: float,
+    protest_keyword_count: int,
+    issue_repetition_days: int = 7,
+    hospital_density: float = 1.0,
+    rainfall: float = 0.0,
+):
+
+    normalized_state = normalize_location_name(state)
+    normalized_state = state_aliases.get(normalized_state, normalized_state)
+    normalized_district = normalize_location_name(district)
+
+    if not normalized_state or not normalized_district:
+        raise HTTPException(status_code=400, detail="State and district are required.")
+
+    risk_summary = predict_protest_risk(
+        {
+            "issue_spike_ratio": issue_spike_ratio,
+            "negative_sentiment_score": negative_sentiment_score,
+            "protest_keyword_count": protest_keyword_count,
+            "issue_repetition_days": issue_repetition_days,
+            "hospital_density": hospital_density,
+            "rainfall": rainfall,
+        }
+    )
+
+    return {
+        "state": normalized_state,
+        "district": normalized_district,
+        **risk_summary,
+    }
+
+
+@app.post("/models/protest-risk/train")
+def train_protest_risk_model(payload: RiskModelTrainingPayload):
+
+    try:
+        return train_and_save_risk_model(payload.training_rows, model_type=payload.model_type)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.get("/analysis/policy-recommendations")
+def get_policy_recommendations(
+    issue: str,
+    anger_score: float,
+    protest_risk: float,
+    hospital_density: float = 1.0,
+):
+
+    recommendations = build_policy_recommendations(
+        primary_issue=issue,
+        anger_score=anger_score,
+        protest_risk=protest_risk,
+        hospital_density=hospital_density,
+    )
+
+    return {
+        "issue": issue,
+        "anger_score": round(anger_score, 3),
+        "protest_risk": round(protest_risk, 3),
+        **recommendations,
+    }
+
+
+@app.get("/alerts/district")
+def get_district_alert(
+    state: str,
+    district: str,
+    hospital_density: float = 1.0,
+    rainfall: float = 0.0,
+):
+
+    normalized_state = normalize_location_name(state)
+    normalized_state = state_aliases.get(normalized_state, normalized_state)
+    normalized_district = normalize_location_name(district)
+
+    if not normalized_state or not normalized_district:
+        raise HTTPException(status_code=400, detail="State and district are required.")
+
+    df = _load_district_articles(normalized_state, normalized_district)
+
+    return build_district_alert(
+        df=df,
+        state=normalized_state,
+        district=normalized_district,
+        retention_days=RETENTION_DAYS,
+        hospital_density=hospital_density,
+        rainfall=rainfall,
+    )
+
+
+@app.get("/monitoring/live")
+def get_live_monitoring(state: str | None = None, limit: int = 25):
+
+    normalized_state = None if state is None else normalize_location_name(state)
+    recent_df = _load_recent_articles(normalized_state)
+
+    if recent_df.empty:
+        return {
+            "window_days": RETENTION_DAYS,
+            "district_count": 0,
+            "district_alerts": [],
+        }
+
+    district_alerts = []
+
+    for (state_name, district_name), group in recent_df.groupby(["state", "district"]):
+        if not state_name or not district_name:
+            continue
+
+        district_alert = build_district_alert(
+            df=group,
+            state=str(state_name),
+            district=str(district_name),
+            retention_days=RETENTION_DAYS,
+        )
+        district_alerts.append(district_alert)
+
+    district_alerts.sort(
+        key=lambda row: (
+            row["protest_risk"]["protest_risk"],
+            row["public_mood"]["anger_score"],
+            row["issue_detection"]["article_count"],
+        ),
+        reverse=True,
+    )
+
+    return {
+        "window_days": RETENTION_DAYS,
+        "district_count": len(district_alerts),
+        "district_alerts": district_alerts[: max(1, min(limit, 100))],
+    }

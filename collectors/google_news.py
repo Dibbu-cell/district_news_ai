@@ -11,7 +11,7 @@ from config.config import (
     GOOGLE_USE_DAY_SLICES,
     REQUEST_WORKERS,
 )
-from collectors.query_builder import build_google_news_terms
+from collectors.query_builder import build_google_news_query_targets
 
 
 def _to_iso8601(struct_time_value):
@@ -128,14 +128,19 @@ def fetch_google_news_targets(targets, after_date=None, before_date=None):
 
 def fetch_google_news():
 
-    def fetch_single_query(query):
+    def fetch_single_query(target):
 
-        return _fetch_query_variants(query)
+        return _fetch_query_variants(
+            target["query"],
+            state_hint=target.get("state_hint"),
+            district_hint=target.get("district_hint"),
+        )
 
     articles = []
+    query_targets = build_google_news_query_targets()
 
     with ThreadPoolExecutor(max_workers=REQUEST_WORKERS) as executor:
-        futures = [executor.submit(fetch_single_query, query) for query in build_google_news_terms()]
+        futures = [executor.submit(fetch_single_query, target) for target in query_targets]
 
         for future in as_completed(futures):
             try:

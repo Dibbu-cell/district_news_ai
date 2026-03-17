@@ -1,0 +1,94 @@
+services:
+  - type: web
+    name: district-news-api
+    runtime: python
+    plan: starter
+    autoDeploy: true
+    buildCommand: pip install --upgrade pip ; pip install -r requirements.txt
+    startCommand: uvicorn api.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: DB_BACKEND
+        value: neo4j
+      - key: NEO4J_URI
+        sync: false
+      - key: NEO4J_USER
+        sync: false
+      - key: NEO4J_PASSWORD
+        sync: false
+      - key: NEO4J_DATABASE
+        value: neo4j
+      - key: NEWS_API_KEY
+        sync: false
+      - key: RETENTION_DAYS
+        value: "5"
+      - key: PIPELINE_RUN_EVERY_MINUTES
+        value: "60"
+      - key: PIPELINE_SCHEDULE_HOUR
+        value: "6"
+      - key: MAX_STATE_QUERIES
+        value: "36"
+      - key: MAX_DISTRICT_QUERIES
+        value: "350"
+      - key: GOOGLE_STATE_QUERIES
+        value: "20"
+      - key: GOOGLE_DISTRICT_QUERIES
+        value: "180"
+      - key: GDELT_STATE_QUERIES
+        value: "30"
+      - key: GDELT_DISTRICT_QUERIES
+        value: "120"
+      - key: REQUEST_WORKERS
+        value: "12"
+      - key: COLLECTOR_WORKERS
+        value: "4"
+      - key: ISSUE_BASELINE_RETENTION_DAYS
+        value: "90"
+
+  - type: worker
+    name: district-news-scheduler
+    runtime: python
+    plan: starter
+    autoDeploy: true
+    buildCommand: pip install --upgrade pip ; pip install -r requirements.txt
+    startCommand: python -m scheduler.daily_runner
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: DB_BACKEND
+        value: neo4j
+      - key: NEO4J_URI
+        sync: false
+      - key: NEO4J_USER
+        sync: false
+      - key: NEO4J_PASSWORD
+        sync: false
+      - key: NEO4J_DATABASE
+        value: neo4j
+      - key: NEWS_API_KEY
+        sync: false
+      - key: RETENTION_DAYS
+        value: "5"
+      - key: PIPELINE_RUN_EVERY_MINUTES
+        value: "60"
+      - key: PIPELINE_SCHEDULE_HOUR
+        value: "6"
+      - key: MAX_STATE_QUERIES
+        value: "36"
+      - key: MAX_DISTRICT_QUERIES
+        value: "350"
+      - key: GOOGLE_STATE_QUERIES
+        value: "20"
+      - key: GOOGLE_DISTRICT_QUERIES
+        value: "180"
+      - key: GDELT_STATE_QUERIES
+        value: "30"
+      - key: GDELT_DISTRICT_QUERIES
+        value: "120"
+      - key: REQUEST_WORKERS
+        value: "12"
+      - key: COLLECTOR_WORKERS
+        value: "4"
+      - key: ISSUE_BASELINE_RETENTION_DAYS
+        value: "90"

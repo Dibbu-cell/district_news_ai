@@ -3,10 +3,10 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta
 from config.config import NEWS_API_KEY, NEWSAPI_MAX_PAGES, REQUEST_WORKERS
 
-from collectors.query_builder import build_newsapi_terms
+from collectors.query_builder import build_newsapi_query_targets
 
 
-def _fetch_query(query, past, today, max_pages=NEWSAPI_MAX_PAGES):
+def _fetch_query(query, past, today, max_pages=NEWSAPI_MAX_PAGES, state_hint=None, district_hint=None):
 
     url = "https://newsapi.org/v2/everything"
     articles = []
@@ -43,7 +43,9 @@ def _fetch_query(query, past, today, max_pages=NEWSAPI_MAX_PAGES):
                 "content": article.get("content") or article.get("description"),
                 "url": article.get("url"),
                 "source": "newsapi",
-                "published_at": article.get("publishedAt")
+                "published_at": article.get("publishedAt"),
+                "state_hint": state_hint,
+                "district_hint": district_hint,
             })
 
         if len(batch) < params["pageSize"]:
@@ -58,9 +60,21 @@ def fetch_newsapi():
     past = today - timedelta(days=1)
 
     articles = []
+    query_targets = build_newsapi_query_targets()
 
     with ThreadPoolExecutor(max_workers=REQUEST_WORKERS) as executor:
-        futures = [executor.submit(_fetch_query, query, past, today) for query in build_newsapi_terms()]
+        futures = [
+            executor.submit(
+                _fetch_query,
+                target["query"],
+                past,
+                today,
+                NEWSAPI_MAX_PAGES,
+                target.get("state_hint"),
+                target.get("district_hint"),
+            )
+            for target in query_targets
+        ]
 
         for future in as_completed(futures):
             try:

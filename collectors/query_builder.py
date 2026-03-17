@@ -23,6 +23,19 @@ BASE_TERMS = [
     "civic issues india",
 ]
 
+REGIONAL_LANGUAGE_TERMS = [
+    "hindi news",
+    "marathi news",
+    "tamil news",
+    "telugu news",
+    "bengali news",
+    "kannada news",
+    "malayalam news",
+    "gujarati news",
+    "punjabi news",
+    "odia news",
+]
+
 
 def _load_location_frame():
 
@@ -41,6 +54,7 @@ def _load_location_frame():
 
 
 LOCATION_FRAME = _load_location_frame()
+PAIR_FRAME = LOCATION_FRAME[["district", "state"]].drop_duplicates().reset_index(drop=True)
 ALL_STATE_NAMES = sorted(LOCATION_FRAME["state"].dropna().unique().tolist())
 ALL_DISTRICT_NAMES = sorted(LOCATION_FRAME["district"].dropna().unique().tolist())
 
@@ -69,6 +83,46 @@ STATE_NAMES = _prioritize_values(ALL_STATE_NAMES, PRIORITY_STATES, MAX_STATE_QUE
 DISTRICT_NAMES = _prioritize_values(ALL_DISTRICT_NAMES, PRIORITY_DISTRICTS, MAX_DISTRICT_QUERIES)
 
 
+def _prioritize_pairs(pair_frame, max_items):
+
+    rows = []
+    seen = set()
+
+    for district in PRIORITY_DISTRICTS:
+        normalized_district = normalize_location_name(district)
+        district_rows = pair_frame[pair_frame["district"] == normalized_district]
+
+        for row in district_rows.itertuples(index=False):
+            key = (row.district, row.state)
+
+            if key not in seen:
+                seen.add(key)
+                rows.append(key)
+
+    for state in PRIORITY_STATES:
+        normalized_state = normalize_location_name(state)
+        state_rows = pair_frame[pair_frame["state"] == normalized_state]
+
+        for row in state_rows.itertuples(index=False):
+            key = (row.district, row.state)
+
+            if key not in seen:
+                seen.add(key)
+                rows.append(key)
+
+    for row in pair_frame.itertuples(index=False):
+        key = (row.district, row.state)
+
+        if key not in seen:
+            seen.add(key)
+            rows.append(key)
+
+    return rows[:max_items]
+
+
+DISTRICT_STATE_TARGETS = _prioritize_pairs(PAIR_FRAME, MAX_DISTRICT_QUERIES)
+
+
 def build_state_terms(limit=None):
 
     state_terms = [f"{state} india news" for state in STATE_NAMES]
@@ -82,6 +136,7 @@ def build_state_terms(limit=None):
 def build_district_terms(limit=None):
 
     district_terms = [f"{district} india district news" for district in DISTRICT_NAMES]
+    district_terms.extend([f"{district} {state} district news" for district, state in DISTRICT_STATE_TARGETS])
 
     if limit is not None:
         return district_terms[:limit]
@@ -103,11 +158,8 @@ def build_district_civic_terms(limit=None):
 def build_district_local_terms(limit=None):
     """State-qualified district queries to reduce geo-ambiguity."""
 
-    state_lookup = dict(zip(LOCATION_FRAME["district"], LOCATION_FRAME["state"]))
-    local_terms = [
-        f"{district} {state_lookup.get(district, '')} news".strip()
-        for district in DISTRICT_NAMES
-    ]
+    local_terms = [f"{district} {state} local news" for district, state in DISTRICT_STATE_TARGETS]
+    local_terms.extend([f"{district} {state} civic issues" for district, state in DISTRICT_STATE_TARGETS])
 
     if limit is not None:
         return local_terms[:limit]
@@ -118,6 +170,23 @@ def build_district_local_terms(limit=None):
 def build_newsapi_terms():
 
     return BASE_TERMS + build_state_terms(limit=12)
+
+
+def build_newsapi_query_targets():
+
+    targets = [{"query": term, "state_hint": None, "district_hint": None} for term in BASE_TERMS]
+
+    for state in build_state_terms(limit=12):
+        targets.append({"query": state, "state_hint": normalize_location_name(state.replace(" india news", "")), "district_hint": None})
+
+    for district, state in DISTRICT_STATE_TARGETS[: min(80, len(DISTRICT_STATE_TARGETS))]:
+        targets.append({
+            "query": f"{district} {state} local governance news",
+            "state_hint": state,
+            "district_hint": district,
+        })
+
+    return targets
 
 
 def build_gdelt_terms():
@@ -136,5 +205,44 @@ def build_google_news_terms():
     terms.extend(build_district_terms(limit=GOOGLE_DISTRICT_QUERIES))
     terms.extend(build_district_civic_terms(limit=GOOGLE_DISTRICT_QUERIES // 2))
     terms.extend(build_district_local_terms(limit=GOOGLE_DISTRICT_QUERIES // 2))
+    terms.extend([f"district india {language_term}" for language_term in REGIONAL_LANGUAGE_TERMS])
 
     return terms
+
+
+def build_google_news_query_targets():
+
+    targets = [{"query": term, "state_hint": None, "district_hint": None} for term in BASE_TERMS]
+
+    for state in STATE_NAMES[:GOOGLE_STATE_QUERIES]:
+        targets.append({"query": f"{state} india news", "state_hint": state, "district_hint": None})
+
+    district_limit = min(len(DISTRICT_STATE_TARGETS), max(GOOGLE_DISTRICT_QUERIES * 2, 120))
+
+    for district, state in DISTRICT_STATE_TARGETS[:district_limit]:
+        targets.append({"query": f"{district} {state} district news", "state_hint": state, "district_hint": district})
+        targets.append({"query": f"{district} {state} civic issues", "state_hint": state, "district_hint": district})
+
+        for language_term in REGIONAL_LANGUAGE_TERMS[:4]:
+            targets.append(
+                {
+                    "query": f"{district} {state} {language_term}",
+                    "state_hint": state,
+                    "district_hint": district,
+                }
+            )
+
+    return targets
+
+
+def build_gdelt_query_targets():
+
+    targets = [{"query": term, "state_hint": None, "district_hint": None} for term in BASE_TERMS]
+
+    for state in STATE_NAMES[:GDELT_STATE_QUERIES]:
+        targets.append({"query": f"{state} india news", "state_hint": state, "district_hint": None})
+
+    for district, state in DISTRICT_STATE_TARGETS[:GDELT_DISTRICT_QUERIES]:
+        targets.append({"query": f"{district} {state} district news", "state_hint": state, "district_hint": district})
+
+    return targets

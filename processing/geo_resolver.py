@@ -90,8 +90,17 @@ district_state_pairs = [
     if row.district and row.state
 ]
 
-district_to_state = {district: state for district, state in district_state_pairs}
-districts = sorted(set(district_to_state.keys()), key=len, reverse=True)
+district_to_states = {}
+
+for district_name, state_name in district_state_pairs:
+    district_to_states.setdefault(district_name, set()).add(state_name)
+
+district_to_state = {
+    district_name: next(iter(state_names))
+    for district_name, state_names in district_to_states.items()
+    if len(state_names) == 1
+}
+districts = sorted({district for district, _ in district_state_pairs}, key=len, reverse=True)
 states = sorted({STATE_ALIASES.get(state, state) for _, state in district_state_pairs}, key=len, reverse=True)
 state_alias_lookup = {alias: canonical for alias, canonical in STATE_ALIASES.items()}
 
@@ -327,10 +336,16 @@ def resolve_location_details(locs, text="", title="", state_hint=None, district_
     district = _choose_best_candidate(district_scores)
 
     if district and not state:
-        state = district_to_state.get(district)
+        state_candidates = district_to_states.get(district, set())
+
+        if len(state_candidates) == 1:
+            state = next(iter(state_candidates))
 
     if district and state and district_to_state.get(district) != state:
-        district = None
+        allowed_states = district_to_states.get(district, set())
+
+        if state not in allowed_states:
+            district = None
 
     if state and not district:
         allowed_districts = state_to_districts.get(state, set())
@@ -358,7 +373,10 @@ def resolve_location_details(locs, text="", title="", state_hint=None, district_
                     break
 
         if district and not state:
-            state = district_to_state.get(district)
+            state_candidates = district_to_states.get(district, set())
+
+            if len(state_candidates) == 1:
+                state = next(iter(state_candidates))
 
     state_confidence = _confidence_from_score(state_scores.get(state, 0), len(all_candidates)) if state else 0.0
     district_confidence = _confidence_from_score(district_scores.get(district, 0), len(all_candidates)) if district else 0.0
@@ -372,8 +390,11 @@ def resolve_location_details(locs, text="", title="", state_hint=None, district_
         state_confidence = 0.0
 
     if district and not state:
-        state = district_to_state.get(district)
-        state_confidence = max(state_confidence, 0.8)
+        state_candidates = district_to_states.get(district, set())
+
+        if len(state_candidates) == 1:
+            state = next(iter(state_candidates))
+            state_confidence = max(state_confidence, 0.8)
 
     return {
         "state": state,
