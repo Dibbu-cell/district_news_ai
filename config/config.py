@@ -1,10 +1,12 @@
 import os
+import socket
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 DEFAULT_SQLITE_PATH = os.path.join(BASE_DIR, "data", "district_news.db")
 DEFAULT_REPORT_PATH = os.path.join(BASE_DIR, "data", "reports", "daily_summary.json")
 DEFAULT_POSTGRES_URL = "postgresql+psycopg2://postgres:postgres@localhost:5432/district_news_ai"
 DEFAULT_NEO4J_URI = "bolt://localhost:7687"
+DEFAULT_SQLITE_URL = f"sqlite:///{DEFAULT_SQLITE_PATH}"
 RETENTION_DAYS = int(os.getenv("RETENTION_DAYS", "5"))
 PIPELINE_SCHEDULE_HOUR = int(os.getenv("PIPELINE_SCHEDULE_HOUR", "6"))
 PIPELINE_RUN_EVERY_MINUTES = int(os.getenv("PIPELINE_RUN_EVERY_MINUTES", "60"))
@@ -47,10 +49,35 @@ PIPELINE_BATCH_SIZE = int(os.getenv("PIPELINE_BATCH_SIZE", "128"))
 DB_WRITE_CHUNK_SIZE = int(os.getenv("DB_WRITE_CHUNK_SIZE", "1000"))
 STATE_CONFIDENCE_THRESHOLD = float(os.getenv("STATE_CONFIDENCE_THRESHOLD", "0.45"))
 DISTRICT_CONFIDENCE_THRESHOLD = float(os.getenv("DISTRICT_CONFIDENCE_THRESHOLD", "0.45"))
-SQLITE_MIGRATION_URL = os.getenv("SQLITE_MIGRATION_URL", f"sqlite:///{DEFAULT_SQLITE_PATH}")
+SQLITE_MIGRATION_URL = os.getenv("SQLITE_MIGRATION_URL", DEFAULT_SQLITE_URL)
 
-DB_BACKEND = os.getenv("DB_BACKEND", "neo4j").strip().lower()
-DATABASE_URL = os.getenv("DATABASE_URL", DEFAULT_POSTGRES_URL)
+_configured_backend = os.getenv("DB_BACKEND")
+
+
+def _neo4j_reachable(host: str = "localhost", port: int = 7687, timeout: float = 1.5) -> bool:
+    """Return True if the Neo4j bolt port is open (Docker Desktop is running)."""
+    try:
+        with socket.create_connection((host, port), timeout=timeout):
+            return True
+    except OSError:
+        return False
+
+
+if _configured_backend:
+    DB_BACKEND = _configured_backend.strip().lower()
+elif _neo4j_reachable():
+    # Docker Desktop is up — Neo4j container is running
+    DB_BACKEND = "neo4j"
+elif os.path.exists(DEFAULT_SQLITE_PATH):
+    # Docker not available, fall back to local SQLite
+    DB_BACKEND = "sqlite"
+else:
+    DB_BACKEND = "neo4j"
+
+if DB_BACKEND == "sqlite":
+	DATABASE_URL = os.getenv("DATABASE_URL", DEFAULT_SQLITE_URL)
+else:
+	DATABASE_URL = os.getenv("DATABASE_URL", DEFAULT_POSTGRES_URL)
 
 NEO4J_URI = os.getenv("NEO4J_URI", DEFAULT_NEO4J_URI)
 NEO4J_USER = os.getenv("NEO4J_USER", "neo4j")
