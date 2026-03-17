@@ -6,6 +6,7 @@ from config.config import (
     GDELT_DISTRICT_QUERIES,
     GDELT_STATE_QUERIES,
     GOOGLE_DISTRICT_QUERIES,
+    GOOGLE_FETCH_ALL_DISTRICT_TARGETS,
     GOOGLE_STATE_QUERIES,
     MAX_DISTRICT_QUERIES,
     MAX_STATE_QUERIES,
@@ -217,7 +218,10 @@ def build_google_news_query_targets():
     for state in STATE_NAMES[:GOOGLE_STATE_QUERIES]:
         targets.append({"query": f"{state} india news", "state_hint": state, "district_hint": None})
 
-    district_limit = min(len(DISTRICT_STATE_TARGETS), max(GOOGLE_DISTRICT_QUERIES * 2, 120))
+    if GOOGLE_FETCH_ALL_DISTRICT_TARGETS:
+        district_limit = len(DISTRICT_STATE_TARGETS)
+    else:
+        district_limit = min(len(DISTRICT_STATE_TARGETS), max(GOOGLE_DISTRICT_QUERIES * 2, 120))
 
     for district, state in DISTRICT_STATE_TARGETS[:district_limit]:
         targets.append({"query": f"{district} {state} district news", "state_hint": state, "district_hint": district})

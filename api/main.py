@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
@@ -9,8 +11,8 @@ from analytics.policy_recommendation import build_policy_recommendations
 from analytics.protest_risk import predict_protest_risk, train_and_save_risk_model
 from analytics.public_mood import build_public_mood_summary
 from analytics.quality_report import build_daily_quality_report, build_source_mapping_audit_report
-from config.config import RETENTION_DAYS
-from database.news_store import load_district_articles, load_recent_articles
+from config.config import PIPELINE_RUN_EVERY_MINUTES, PIPELINE_SCHEDULE_HOUR, RETENTION_DAYS
+from database.news_store import get_pipeline_status, load_district_articles, load_recent_articles
 from processing.geo_resolver import normalize_location_name, state_aliases
 
 app = FastAPI()
@@ -146,6 +148,27 @@ def get_source_mapping_audit(state: str | None = None, limit: int = 25):
     raw_df = load_recent_articles(RETENTION_DAYS, normalized_state)
 
     return build_source_mapping_audit_report(raw_df, RETENTION_DAYS, limit=max(1, min(limit, 100)))
+
+
+@app.get("/health/pipeline")
+def get_pipeline_health():
+
+    cadence = {
+        "mode": "interval" if PIPELINE_RUN_EVERY_MINUTES > 0 else "cron",
+        "every_minutes": PIPELINE_RUN_EVERY_MINUTES if PIPELINE_RUN_EVERY_MINUTES > 0 else None,
+        "cron_hour_utc": None if PIPELINE_RUN_EVERY_MINUTES > 0 else PIPELINE_SCHEDULE_HOUR,
+    }
+
+    status = get_pipeline_status("scheduler")
+
+    return {
+        "now_utc": datetime.now(timezone.utc).isoformat(),
+        "scheduler_cadence": cadence,
+        "last_successful_pipeline_run_time": None if status is None else status.get("last_successful_run_at"),
+        "last_inserted_article_count": 0 if status is None else int(status.get("last_inserted_article_count") or 0),
+        "last_collected_article_count": 0 if status is None else int(status.get("last_collected_count") or 0),
+        "status": status,
+    }
 
 
 @app.get("/district/{district}")

@@ -1,5 +1,6 @@
 import sys
 import json
+from datetime import datetime, timezone
 from pathlib import Path
 
 from apscheduler.schedulers.blocking import BlockingScheduler
@@ -14,7 +15,7 @@ from config.config import (
     PIPELINE_SCHEDULE_HOUR,
     RETENTION_DAYS,
 )
-from database.news_store import ensure_data_store_ready, load_recent_articles
+from database.news_store import ensure_data_store_ready, load_recent_articles, upsert_pipeline_status
 from processing.geo_resolver import normalize_location_name
 from scheduler.pipeline import run_pipeline
 
@@ -36,6 +37,15 @@ def run_daily_job():
     ensure_data_store_ready()
     result = run_pipeline()
     report_path = export_daily_summary_report()
+    upsert_pipeline_status(
+        service="scheduler",
+        last_successful_run_at=datetime.now(timezone.utc).isoformat(),
+        last_inserted_article_count=int(result.get("inserted", 0)),
+        last_collected_count=int(result.get("collected", 0)),
+        last_unique_count=int(result.get("unique", 0)),
+        last_backfilled_count=int(result.get("backfilled", 0)),
+        last_run_result=result,
+    )
     print(f"Daily pipeline completed: {result}; report written to {report_path}")
 
 

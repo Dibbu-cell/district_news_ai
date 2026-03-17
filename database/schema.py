@@ -20,6 +20,20 @@ news_articles = Table(
     Column("ingested_at", DateTime(timezone=True), nullable=True),
 )
 
+pipeline_status = Table(
+    "pipeline_status",
+    metadata,
+    Column("id", Integer, primary_key=True, autoincrement=True),
+    Column("service", Text, nullable=False),
+    Column("last_successful_run_at", Text, nullable=True),
+    Column("last_inserted_article_count", Integer, nullable=False, default=0),
+    Column("last_collected_count", Integer, nullable=False, default=0),
+    Column("last_unique_count", Integer, nullable=False, default=0),
+    Column("last_backfilled_count", Integer, nullable=False, default=0),
+    Column("last_run_result", Text, nullable=True),
+    Column("updated_at", Text, nullable=True),
+)
+
 issue_daily_history = Table(
     "issue_daily_history",
     metadata,
@@ -38,6 +52,7 @@ Index("ix_news_articles_state", news_articles.c.state)
 Index("ix_news_articles_district", news_articles.c.district)
 Index("ix_news_articles_published_at", news_articles.c.published_at)
 Index("ix_news_articles_state_district", news_articles.c.state, news_articles.c.district)
+Index("ix_pipeline_status_service", pipeline_status.c.service, unique=True)
 Index("ix_issue_daily_history_count_key", issue_daily_history.c.count_key, unique=True)
 Index("ix_issue_daily_history_date", issue_daily_history.c.date)
 Index("ix_issue_daily_history_state_district", issue_daily_history.c.state, issue_daily_history.c.district)

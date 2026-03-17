@@ -103,6 +103,13 @@ def ensure_data_store_ready() -> None:
             ON (h.state, h.district)
             """
         )
+        session.run(
+            """
+            CREATE CONSTRAINT pipeline_status_service_unique IF NOT EXISTS
+            FOR (p:PipelineStatus)
+            REQUIRE p.service IS UNIQUE
+            """
+        )
 
 
 def get_existing_urls() -> set[str]:
@@ -577,6 +584,156 @@ def load_issue_history(state: str, district: str, days: int = 30) -> list[dict]:
         ]
 
     return records
+
+
+def upsert_pipeline_status(
+    *,
+    service: str,
+    last_successful_run_at: str,
+    last_inserted_article_count: int,
+    last_collected_count: int,
+    last_unique_count: int,
+    last_backfilled_count: int,
+    last_run_result: dict | None = None,
+) -> None:
+    result_json = None if last_run_result is None else json.dumps(last_run_result)
+    updated_at = datetime.now(timezone.utc).isoformat()
+
+    if not using_neo4j_backend():
+        with _SQL_ENGINE.begin() as conn:
+            conn.execute(text("DELETE FROM pipeline_status WHERE service = :service"), {"service": service})
+            conn.execute(
+                text(
+                    """
+                    INSERT INTO pipeline_status (
+                        service,
+                        last_successful_run_at,
+                        last_inserted_article_count,
+                        last_collected_count,
+                        last_unique_count,
+                        last_backfilled_count,
+                        last_run_result,
+                        updated_at
+                    )
+                    VALUES (
+                        :service,
+                        :last_successful_run_at,
+                        :last_inserted_article_count,
+                        :last_collected_count,
+                        :last_unique_count,
+                        :last_backfilled_count,
+                        :last_run_result,
+                        :updated_at
+                    )
+                    """
+                ),
+                {
+                    "service": service,
+                    "last_successful_run_at": last_successful_run_at,
+                    "last_inserted_article_count": int(last_inserted_article_count),
+                    "last_collected_count": int(last_collected_count),
+                    "last_unique_count": int(last_unique_count),
+                    "last_backfilled_count": int(last_backfilled_count),
+                    "last_run_result": result_json,
+                    "updated_at": updated_at,
+                },
+            )
+        return
+
+    driver = _get_driver()
+
+    with driver.session(database=NEO4J_DATABASE) as session:
+        session.run(
+            """
+            MERGE (p:PipelineStatus {service: $service})
+            SET p.last_successful_run_at = $last_successful_run_at,
+                p.last_inserted_article_count = $last_inserted_article_count,
+                p.last_collected_count = $last_collected_count,
+                p.last_unique_count = $last_unique_count,
+                p.last_backfilled_count = $last_backfilled_count,
+                p.last_run_result = $last_run_result,
+                p.updated_at = $updated_at
+            """,
+            service=service,
+            last_successful_run_at=last_successful_run_at,
+            last_inserted_article_count=int(last_inserted_article_count),
+            last_collected_count=int(last_collected_count),
+            last_unique_count=int(last_unique_count),
+            last_backfilled_count=int(last_backfilled_count),
+            last_run_result=result_json,
+            updated_at=updated_at,
+        )
+
+
+def get_pipeline_status(service: str = "scheduler") -> dict | None:
+    if not using_neo4j_backend():
+        try:
+            rows = pd.read_sql(
+                text(
+                    """
+                    SELECT service,
+                           last_successful_run_at,
+                           last_inserted_article_count,
+                           last_collected_count,
+                           last_unique_count,
+                           last_backfilled_count,
+                           last_run_result,
+                           updated_at
+                    FROM pipeline_status
+                    WHERE service = :service
+                    LIMIT 1
+                    """
+                ),
+                _SQL_ENGINE,
+                params={"service": service},
+            )
+        except (SQLAlchemyError, DatabaseError):
+            return None
+
+        if rows.empty:
+            return None
+
+        row = rows.iloc[0].to_dict()
+
+        if row.get("last_run_result"):
+            try:
+                row["last_run_result"] = json.loads(row["last_run_result"])
+            except (TypeError, json.JSONDecodeError):
+                pass
+
+        return row
+
+    driver = _get_driver()
+
+    with driver.session(database=NEO4J_DATABASE) as session:
+        record = session.run(
+            """
+            MATCH (p:PipelineStatus {service: $service})
+            RETURN p.service AS service,
+                   p.last_successful_run_at AS last_successful_run_at,
+                   p.last_inserted_article_count AS last_inserted_article_count,
+                   p.last_collected_count AS last_collected_count,
+                   p.last_unique_count AS last_unique_count,
+                   p.last_backfilled_count AS last_backfilled_count,
+                   p.last_run_result AS last_run_result,
+                   p.updated_at AS updated_at
+            LIMIT 1
+            """,
+            service=service,
+        ).single()
+
+    if record is None:
+        return None
+
+    payload = record.data()
+
+    if payload.get("last_run_result"):
+        try:
+            payload["last_run_result"] = json.loads(payload["last_run_result"])
+        except (TypeError, json.JSONDecodeError):
+            pass
+
+    return payload
 
 
 def load_recent_articles(retention_days: int, state: str | None = None) -> pd.DataFrame:
