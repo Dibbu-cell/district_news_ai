@@ -4,7 +4,7 @@ services:
     runtime: python
     plan: starter
     autoDeploy: true
-    buildCommand: pip install --upgrade pip ; pip install -r requirements.txt
+    buildCommand: pip install --upgrade pip ; pip install -r requirements.txt ; python -m spacy download en_core_web_sm
     startCommand: uvicorn api.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PYTHON_VERSION
@@ -47,7 +47,7 @@ services:
     runtime: python
     plan: starter
     autoDeploy: true
-    buildCommand: pip install --upgrade pip ; pip install -r requirements.txt
+    buildCommand: pip install --upgrade pip ; pip install -r requirements.txt ; python -m spacy download en_core_web_sm
     startCommand: python -m scheduler.daily_runner
     envVars:
       - key: PYTHON_VERSION
