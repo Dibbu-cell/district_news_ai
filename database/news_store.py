@@ -1,26 +1,42 @@
 from __future__ import annotations
 
 import json
+import re
 from datetime import datetime, timedelta, timezone
 from typing import Iterable
 
 import pandas as pd
 from neo4j import GraphDatabase
 from pandas.errors import DatabaseError
+from pymongo import MongoClient, UpdateOne
 from sqlalchemy import inspect, text
 from sqlalchemy.exc import SQLAlchemyError
 
-from config.config import DATABASE_URL, DB_BACKEND, NEO4J_DATABASE, NEO4J_PASSWORD, NEO4J_URI, NEO4J_USER
+from config.config import (
+    DATABASE_URL,
+    DB_BACKEND,
+    MONGODB_DB_NAME,
+    MONGODB_URI,
+    NEO4J_DATABASE,
+    NEO4J_PASSWORD,
+    NEO4J_URI,
+    NEO4J_USER,
+)
 from database.db import create_app_engine
 from database.schema import ensure_schema as ensure_sql_schema
 
 
 _SQL_ENGINE = create_app_engine(DATABASE_URL)
 _NEO4J_DRIVER = None
+_MONGO_CLIENT = None
 
 
 def using_neo4j_backend() -> bool:
     return DB_BACKEND == "neo4j"
+
+
+def using_mongodb_backend() -> bool:
+    return DB_BACKEND == "mongodb"
 
 
 def _get_driver():
@@ -32,7 +48,38 @@ def _get_driver():
     return _NEO4J_DRIVER
 
 
+def _get_mongo_client() -> MongoClient:
+    global _MONGO_CLIENT
+
+    if _MONGO_CLIENT is None:
+        _MONGO_CLIENT = MongoClient(MONGODB_URI, appname="district-news-ai")
+
+    return _MONGO_CLIENT
+
+
+def _get_mongo_db():
+    return _get_mongo_client()[MONGODB_DB_NAME]
+
+
 def ensure_data_store_ready() -> None:
+    if using_mongodb_backend():
+        mongo_db = _get_mongo_db()
+
+        mongo_db["news_articles"].create_index("article_key", unique=True)
+        mongo_db["news_articles"].create_index("url")
+        mongo_db["news_articles"].create_index("state")
+        mongo_db["news_articles"].create_index("district")
+        mongo_db["news_articles"].create_index("published_at")
+        mongo_db["news_articles"].create_index([("state", 1), ("district", 1)])
+
+        mongo_db["issue_daily_history"].create_index("count_key", unique=True)
+        mongo_db["issue_daily_history"].create_index("date")
+        mongo_db["issue_daily_history"].create_index([("state", 1), ("district", 1)])
+        mongo_db["issue_daily_history"].create_index("issue")
+
+        mongo_db["pipeline_status"].create_index("service", unique=True)
+        return
+
     if not using_neo4j_backend():
         ensure_sql_schema(_SQL_ENGINE)
         return
@@ -113,6 +160,10 @@ def ensure_data_store_ready() -> None:
 
 
 def get_existing_urls() -> set[str]:
+    if using_mongodb_backend():
+        values = _get_mongo_db()["news_articles"].distinct("url", {"url": {"$ne": None}})
+        return {value for value in values if value}
+
     if not using_neo4j_backend():
         try:
             existing = pd.read_sql("SELECT url FROM news_articles", _SQL_ENGINE)
@@ -157,6 +208,49 @@ def append_articles(df: pd.DataFrame) -> int:
 
     write_df = df.copy()
     write_df["published_at"] = write_df["published_at"].apply(_normalize_timestamp)
+
+    if using_mongodb_backend():
+        collection = _get_mongo_db()["news_articles"]
+        operations: list[UpdateOne] = []
+
+        for row in write_df.to_dict(orient="records"):
+            embedding_value = row.get("embedding")
+
+            if embedding_value is not None and not isinstance(embedding_value, str):
+                embedding_value = json.dumps(embedding_value)
+
+            raw_state = row.get("state")
+            raw_district = row.get("district")
+            state = (str(raw_state).strip() if raw_state is not None and raw_state == raw_state else None) or None
+            district = (str(raw_district).strip() if raw_district is not None and raw_district == raw_district else None) or None
+
+            payload = {
+                "article_key": _article_key(row),
+                "title": row.get("title"),
+                "content": row.get("content"),
+                "url": row.get("url"),
+                "source": row.get("source"),
+                "state": state,
+                "district": district,
+                "state_confidence": row.get("state_confidence"),
+                "district_confidence": row.get("district_confidence"),
+                "embedding": embedding_value,
+                "published_at": row.get("published_at"),
+                "ingested_at": datetime.now(timezone.utc).isoformat(),
+            }
+
+            operations.append(
+                UpdateOne(
+                    {"article_key": payload["article_key"]},
+                    {"$set": payload},
+                    upsert=True,
+                )
+            )
+
+        if operations:
+            collection.bulk_write(operations, ordered=False)
+
+        return len(operations)
 
     if not using_neo4j_backend():
         table_columns = {column["name"] for column in inspect(_SQL_ENGINE).get_columns("news_articles")}
@@ -247,6 +341,12 @@ def append_articles(df: pd.DataFrame) -> int:
 def delete_expired_news(retention_days: int) -> int:
     cutoff = (datetime.now(timezone.utc) - timedelta(days=retention_days)).isoformat()
 
+    if using_mongodb_backend():
+        result = _get_mongo_db()["news_articles"].delete_many(
+            {"published_at": {"$ne": None, "$lt": cutoff}}
+        )
+        return int(result.deleted_count)
+
     if not using_neo4j_backend():
         try:
             with _SQL_ENGINE.begin() as conn:
@@ -292,6 +392,32 @@ def delete_expired_news(retention_days: int) -> int:
 
 
 def get_pending_location_rows() -> pd.DataFrame:
+    if using_mongodb_backend():
+        records = list(
+            _get_mongo_db()["news_articles"].find(
+                {
+                    "$or": [
+                        {"state": {"$exists": False}},
+                        {"district": {"$exists": False}},
+                        {"state": None},
+                        {"district": None},
+                    ]
+                },
+                {
+                    "_id": 0,
+                    "url": 1,
+                    "source": 1,
+                    "title": 1,
+                    "content": 1,
+                    "state": 1,
+                    "district": 1,
+                    "state_confidence": 1,
+                    "district_confidence": 1,
+                },
+            )
+        )
+        return pd.DataFrame(records)
+
     if not using_neo4j_backend():
         try:
             return pd.read_sql(
@@ -332,6 +458,37 @@ def update_article_location(
     state_confidence: float | None,
     district_confidence: float | None,
 ) -> None:
+    if using_mongodb_backend():
+        collection = _get_mongo_db()["news_articles"]
+        match = {"url": url, "source": source}
+
+        if state is not None:
+            collection.update_many(
+                {
+                    **match,
+                    "$or": [
+                        {"state": {"$exists": False}},
+                        {"state": None},
+                        {"state": ""},
+                    ],
+                },
+                {"$set": {"state": state, "state_confidence": state_confidence}},
+            )
+
+        if district is not None:
+            collection.update_many(
+                {
+                    **match,
+                    "$or": [
+                        {"district": {"$exists": False}},
+                        {"district": None},
+                        {"district": ""},
+                    ],
+                },
+                {"$set": {"district": district, "district_confidence": district_confidence}},
+            )
+        return
+
     if not using_neo4j_backend():
         with _SQL_ENGINE.begin() as conn:
             conn.execute(
@@ -476,6 +633,29 @@ def upsert_issue_history(rows: list[dict], retention_days: int) -> int:
 
     retained_cutoff = (datetime.now(timezone.utc).date() - timedelta(days=retention_days)).isoformat()
 
+    if using_mongodb_backend():
+        collection = _get_mongo_db()["issue_daily_history"]
+        collection.delete_many({"date": {"$lt": retained_cutoff}})
+
+        operations = [
+            UpdateOne(
+                {"count_key": row["count_key"]},
+                {
+                    "$set": {
+                        **row,
+                        "updated_at": datetime.now(timezone.utc).isoformat(),
+                    }
+                },
+                upsert=True,
+            )
+            for row in normalized_rows
+        ]
+
+        if operations:
+            collection.bulk_write(operations, ordered=False)
+
+        return len(operations)
+
     if not using_neo4j_backend():
         with _SQL_ENGINE.begin() as conn:
             conn.execute(
@@ -538,6 +718,21 @@ def load_issue_history(state: str, district: str, days: int = 30) -> list[dict]:
 
     cutoff = (datetime.now(timezone.utc).date() - timedelta(days=days)).isoformat()
 
+    if using_mongodb_backend():
+        records = (
+            _get_mongo_db()["issue_daily_history"]
+            .find(
+                {
+                    "state": normalized_state,
+                    "district": normalized_district,
+                    "date": {"$gte": cutoff},
+                },
+                {"_id": 0, "date": 1, "state": 1, "district": 1, "issue": 1, "count": 1},
+            )
+            .sort("date", 1)
+        )
+        return list(records)
+
     if not using_neo4j_backend():
         try:
             rows = pd.read_sql(
@@ -598,6 +793,25 @@ def upsert_pipeline_status(
 ) -> None:
     result_json = None if last_run_result is None else json.dumps(last_run_result)
     updated_at = datetime.now(timezone.utc).isoformat()
+
+    if using_mongodb_backend():
+        _get_mongo_db()["pipeline_status"].update_one(
+            {"service": service},
+            {
+                "$set": {
+                    "service": service,
+                    "last_successful_run_at": last_successful_run_at,
+                    "last_inserted_article_count": int(last_inserted_article_count),
+                    "last_collected_count": int(last_collected_count),
+                    "last_unique_count": int(last_unique_count),
+                    "last_backfilled_count": int(last_backfilled_count),
+                    "last_run_result": result_json,
+                    "updated_at": updated_at,
+                }
+            },
+            upsert=True,
+        )
+        return
 
     if not using_neo4j_backend():
         with _SQL_ENGINE.begin() as conn:
@@ -666,6 +880,20 @@ def upsert_pipeline_status(
 
 
 def get_pipeline_status(service: str = "scheduler") -> dict | None:
+    if using_mongodb_backend():
+        payload = _get_mongo_db()["pipeline_status"].find_one({"service": service}, {"_id": 0})
+
+        if payload is None:
+            return None
+
+        if payload.get("last_run_result"):
+            try:
+                payload["last_run_result"] = json.loads(payload["last_run_result"])
+            except (TypeError, json.JSONDecodeError):
+                pass
+
+        return payload
+
     if not using_neo4j_backend():
         try:
             rows = pd.read_sql(
@@ -739,6 +967,36 @@ def get_pipeline_status(service: str = "scheduler") -> dict | None:
 def load_recent_articles(retention_days: int, state: str | None = None) -> pd.DataFrame:
     cutoff = (datetime.utcnow() - timedelta(days=retention_days)).strftime("%Y-%m-%d %H:%M:%S")
 
+    if using_mongodb_backend():
+        cutoff_iso = pd.Timestamp(cutoff, tz="UTC").isoformat()
+        date_filter = {
+            "$or": [
+                {"published_at": None},
+                {"published_at": {"$gt": cutoff_iso}},
+            ]
+        }
+        query = dict(date_filter)
+
+        if state:
+            query["state"] = {"$regex": f"^{re.escape(state)}$", "$options": "i"}
+
+        records = _get_mongo_db()["news_articles"].find(
+            query,
+            {
+                "_id": 0,
+                "title": 1,
+                "content": 1,
+                "url": 1,
+                "source": 1,
+                "state": 1,
+                "district": 1,
+                "state_confidence": 1,
+                "district_confidence": 1,
+                "published_at": 1,
+            },
+        )
+        return _records_to_df(records)
+
     if not using_neo4j_backend():
         query = text(
             """
@@ -780,6 +1038,111 @@ def load_recent_articles(retention_days: int, state: str | None = None) -> pd.Da
 
 def load_district_articles(retention_days: int, state: str, district: str, variants: list[str]) -> pd.DataFrame:
     cutoff = pd.Timestamp(datetime.utcnow() - timedelta(days=retention_days), tz="UTC").isoformat()
+
+    if using_mongodb_backend():
+        collection = _get_mongo_db()["news_articles"]
+        state_exact = {"$regex": f"^{re.escape(state)}$", "$options": "i"}
+        district_exact = {"$regex": f"^{re.escape(district)}$", "$options": "i"}
+        date_filter = {"$or": [{"published_at": None}, {"published_at": {"$gt": cutoff}}]}
+
+        direct_records = collection.find(
+            {
+                "$and": [
+                    date_filter,
+                    {"state": state_exact},
+                    {"district": district_exact},
+                ]
+            },
+            {
+                "_id": 0,
+                "title": 1,
+                "content": 1,
+                "url": 1,
+                "source": 1,
+                "state": 1,
+                "district": 1,
+                "state_confidence": 1,
+                "district_confidence": 1,
+                "published_at": 1,
+            },
+        )
+        direct_rows = list(direct_records)
+
+        if direct_rows:
+            return _records_to_df(direct_rows)
+
+        if variants:
+            variant_patterns = [re.compile(f"^{re.escape(value)}$", re.IGNORECASE) for value in variants]
+            variant_records = collection.find(
+                {
+                    "$and": [
+                        date_filter,
+                        {"state": state_exact},
+                        {"district": {"$in": variant_patterns}},
+                    ]
+                },
+                {
+                    "_id": 0,
+                    "title": 1,
+                    "content": 1,
+                    "url": 1,
+                    "source": 1,
+                    "state": 1,
+                    "district": 1,
+                    "state_confidence": 1,
+                    "district_confidence": 1,
+                    "published_at": 1,
+                },
+            )
+            variant_rows = list(variant_records)
+
+            if variant_rows:
+                return _records_to_df(variant_rows)
+
+        district_contains = {"$regex": re.escape(district), "$options": "i"}
+        fallback_rows = list(
+            collection.find(
+                {
+                    "$and": [
+                        date_filter,
+                        {
+                            "$or": [
+                                {"state": state_exact},
+                                {"state": None},
+                                {"state": ""},
+                                {"state": {"$exists": False}},
+                            ]
+                        },
+                        {
+                            "$or": [
+                                {"title": district_contains},
+                                {"content": district_contains},
+                            ]
+                        },
+                    ]
+                },
+                {
+                    "_id": 0,
+                    "title": 1,
+                    "content": 1,
+                    "url": 1,
+                    "source": 1,
+                    "state": 1,
+                    "district": 1,
+                    "state_confidence": 1,
+                    "district_confidence": 1,
+                    "published_at": 1,
+                },
+            )
+        )
+
+        if not fallback_rows:
+            return _records_to_df([])
+
+        for row in fallback_rows:
+            row["district"] = district
+
+        return _records_to_df(fallback_rows)
 
     if not using_neo4j_backend():
         direct_query = text(
@@ -937,6 +1300,35 @@ def load_district_articles(retention_days: int, state: str, district: str, varia
 
 
 def get_assigned_state_district_pairs() -> pd.DataFrame:
+    if using_mongodb_backend():
+        records = list(
+            _get_mongo_db()["news_articles"].aggregate(
+                [
+                    {
+                        "$match": {
+                            "state": {"$exists": True, "$nin": [None, ""]},
+                            "district": {"$exists": True, "$nin": [None, ""]},
+                        }
+                    },
+                    {
+                        "$project": {
+                            "state": {"$toLower": "$state"},
+                            "district": {"$toLower": "$district"},
+                        }
+                    },
+                    {"$group": {"_id": {"state": "$state", "district": "$district"}}},
+                    {
+                        "$project": {
+                            "_id": 0,
+                            "state": "$_id.state",
+                            "district": "$_id.district",
+                        }
+                    },
+                ]
+            )
+        )
+        return pd.DataFrame(records)
+
     if not using_neo4j_backend():
         query = text(
             """

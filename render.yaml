@@ -10,15 +10,11 @@ services:
       - key: PYTHON_VERSION
         value: 3.11.9
       - key: DB_BACKEND
-        value: neo4j
-      - key: NEO4J_URI
+        value: mongodb
+      - key: MONGODB_URI
         sync: false
-      - key: NEO4J_USER
-        sync: false
-      - key: NEO4J_PASSWORD
-        sync: false
-      - key: NEO4J_DATABASE
-        value: neo4j
+      - key: MONGODB_DB_NAME
+        value: sample_mflix
       - key: NEWS_API_KEY
         sync: false
       - key: RETENTION_DAYS
@@ -57,15 +53,11 @@ services:
       - key: PYTHON_VERSION
         value: 3.11.9
       - key: DB_BACKEND
-        value: neo4j
-      - key: NEO4J_URI
+        value: mongodb
+      - key: MONGODB_URI
         sync: false
-      - key: NEO4J_USER
-        sync: false
-      - key: NEO4J_PASSWORD
-        sync: false
-      - key: NEO4J_DATABASE
-        value: neo4j
+      - key: MONGODB_DB_NAME
+        value: sample_mflix
       - key: NEWS_API_KEY
         sync: false
       - key: RETENTION_DAYS
