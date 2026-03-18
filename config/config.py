@@ -1,7 +1,10 @@
 import os
 import socket
 
+from dotenv import load_dotenv
+
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+load_dotenv(os.path.join(BASE_DIR, ".env"))
 DEFAULT_SQLITE_PATH = os.path.join(BASE_DIR, "data", "district_news.db")
 DEFAULT_REPORT_PATH = os.path.join(BASE_DIR, "data", "reports", "daily_summary.json")
 DEFAULT_POSTGRES_URL = "postgresql+psycopg2://postgres:postgres@localhost:5432/district_news_ai"
