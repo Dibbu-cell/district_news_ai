@@ -159,7 +159,13 @@ def get_pipeline_health():
         "cron_hour_utc": None if PIPELINE_RUN_EVERY_MINUTES > 0 else PIPELINE_SCHEDULE_HOUR,
     }
 
-    status = get_pipeline_status("scheduler")
+    try:
+        status = get_pipeline_status("scheduler")
+    except Exception as exc:
+        raise HTTPException(
+            status_code=503,
+            detail=f"Database unavailable while reading pipeline status: {exc}",
+        ) from exc
 
     return {
         "now_utc": datetime.now(timezone.utc).isoformat(),
