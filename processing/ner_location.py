@@ -1,6 +1,16 @@
 import spacy
 
-nlp = spacy.load("en_core_web_sm")
+_nlp = None
+
+
+def _get_nlp():
+
+    global _nlp
+
+    if _nlp is None:
+        _nlp = spacy.load("en_core_web_sm")
+
+    return _nlp
 
 
 def extract_locations(text):
@@ -8,7 +18,7 @@ def extract_locations(text):
     if not text:
         return []
 
-    doc = nlp(text)
+    doc = _get_nlp()(text)
 
     locs = []
 
@@ -26,7 +36,7 @@ def extract_locations_batch(texts, batch_size=128):
 
     location_groups = []
 
-    for doc in nlp.pipe(texts, batch_size=batch_size):
+    for doc in _get_nlp().pipe(texts, batch_size=batch_size):
         locs = []
 
         for ent in doc.ents:

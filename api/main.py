@@ -18,6 +18,24 @@ from processing.geo_resolver import normalize_location_name, state_aliases
 app = FastAPI()
 
 
+@app.get("/")
+def get_root():
+
+    return {
+        "service": "district-news-api",
+        "status": "ok",
+    }
+
+
+@app.get("/health")
+def get_health():
+
+    return {
+        "status": "ok",
+        "service": "district-news-api",
+    }
+
+
 class RiskModelTrainingPayload(BaseModel):
     model_type: str = "logistic_regression"
     training_rows: list[dict]
