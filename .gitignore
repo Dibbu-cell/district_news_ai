@@ -8,3 +8,4 @@
 data/*.db
 data/reports/*.csv
 data/reports/*.json
+data/reports/*.pdf

@@ -6,7 +6,6 @@ from datetime import datetime, timedelta, timezone
 from typing import Iterable
 
 import pandas as pd
-from neo4j import GraphDatabase
 from pandas.errors import DatabaseError
 from pymongo import MongoClient, UpdateOne
 from sqlalchemy import inspect, text
@@ -18,11 +17,9 @@ from config.config import (
     MONGODB_DB_NAME,
     MONGODB_URI,
     NEO4J_DATABASE,
-    NEO4J_PASSWORD,
-    NEO4J_URI,
-    NEO4J_USER,
 )
 from database.db import create_app_engine
+from database.graph_manager import get_verified_driver
 from database.schema import ensure_schema as ensure_sql_schema
 
 
@@ -43,7 +40,7 @@ def _get_driver():
     global _NEO4J_DRIVER
 
     if _NEO4J_DRIVER is None:
-        _NEO4J_DRIVER = GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD))
+        _NEO4J_DRIVER = get_verified_driver()
 
     return _NEO4J_DRIVER
 

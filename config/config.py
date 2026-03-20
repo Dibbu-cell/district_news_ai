@@ -1,7 +1,7 @@
 import os
-import socket
 
 from dotenv import load_dotenv
+
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 load_dotenv(os.path.join(BASE_DIR, ".env"))
@@ -9,6 +9,8 @@ DEFAULT_SQLITE_PATH = os.path.join(BASE_DIR, "data", "district_news.db")
 DEFAULT_REPORT_PATH = os.path.join(BASE_DIR, "data", "reports", "daily_summary.json")
 DEFAULT_POSTGRES_URL = "postgresql+psycopg2://postgres:postgres@localhost:5432/district_news_ai"
 DEFAULT_NEO4J_URI = "bolt://localhost:7687"
+DEFAULT_NEO4J_USER = "neo4j"
+DEFAULT_NEO4J_PASSWORD = "password"
 DEFAULT_MONGODB_URI = "mongodb+srv://<username>:<password>@cluster0.von1va3.mongodb.net/?appName=Cluster0"
 DEFAULT_SQLITE_URL = f"sqlite:///{DEFAULT_SQLITE_PATH}"
 RETENTION_DAYS = int(os.getenv("RETENTION_DAYS", "5"))
@@ -57,40 +59,12 @@ STATE_CONFIDENCE_THRESHOLD = float(os.getenv("STATE_CONFIDENCE_THRESHOLD", "0.45
 DISTRICT_CONFIDENCE_THRESHOLD = float(os.getenv("DISTRICT_CONFIDENCE_THRESHOLD", "0.45"))
 SQLITE_MIGRATION_URL = os.getenv("SQLITE_MIGRATION_URL", DEFAULT_SQLITE_URL)
 
-_configured_backend = os.getenv("DB_BACKEND")
-_configured_mongodb_uri = os.getenv("MONGODB_URI")
-
-
-def _neo4j_reachable(host: str = "localhost", port: int = 7687, timeout: float = 1.5) -> bool:
-    """Return True if the Neo4j bolt port is open (Docker Desktop is running)."""
-    try:
-        with socket.create_connection((host, port), timeout=timeout):
-            return True
-    except OSError:
-        return False
-
-
-if _configured_backend:
-    DB_BACKEND = _configured_backend.strip().lower()
-elif _configured_mongodb_uri:
-	DB_BACKEND = "mongodb"
-elif _neo4j_reachable():
-    # Docker Desktop is up — Neo4j container is running
-    DB_BACKEND = "neo4j"
-elif os.path.exists(DEFAULT_SQLITE_PATH):
-    # Docker not available, fall back to local SQLite
-    DB_BACKEND = "sqlite"
-else:
-    DB_BACKEND = "neo4j"
-
-if DB_BACKEND == "sqlite":
-	DATABASE_URL = os.getenv("DATABASE_URL", DEFAULT_SQLITE_URL)
-else:
-	DATABASE_URL = os.getenv("DATABASE_URL", DEFAULT_POSTGRES_URL)
+DB_BACKEND = os.getenv("DB_BACKEND", "neo4j").strip().lower()
+DATABASE_URL = os.getenv("DATABASE_URL", DEFAULT_POSTGRES_URL)
 
 NEO4J_URI = os.getenv("NEO4J_URI", DEFAULT_NEO4J_URI)
-NEO4J_USER = os.getenv("NEO4J_USER", "neo4j")
-NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD", "password")
+NEO4J_USER = os.getenv("NEO4J_USER", DEFAULT_NEO4J_USER)
+NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD", DEFAULT_NEO4J_PASSWORD)
 NEO4J_DATABASE = os.getenv("NEO4J_DATABASE", "neo4j")
 MONGODB_URI = os.getenv("MONGODB_URI", DEFAULT_MONGODB_URI)
 MONGODB_DB_NAME = os.getenv("MONGODB_DB_NAME", "district_news_ai")
